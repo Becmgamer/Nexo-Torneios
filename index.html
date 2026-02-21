@@ -1,215 +1,181 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nexo Studios - Torneios</title>
-  <style>
-    /* --- Tema Neon Azul e Verde --- */
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background-color: #0f0f1a;
-      color: #00ffcc;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXO Studio - Torneios</title>
 
-    .container {
-      max-width: 800px;
-      margin: auto;
-      padding: 20px;
-      text-align: center;
-    }
+<style>
+body{
+    background:#0a0f1c;
+    font-family:Arial, sans-serif;
+    color:white;
+    text-align:center;
+}
 
-    h1, h2 {
-      color: #00ffcc;
-      text-shadow: 0 0 5px #00ffcc, 0 0 10px #00ffcc;
-    }
+.container{
+    max-width:500px;
+    margin:auto;
+    padding:20px;
+}
 
-    button {
-      background-color: #001f2f;
-      border: 2px solid #00ffcc;
-      color: #00ffcc;
-      padding: 12px 25px;
-      margin: 10px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 16px;
-      transition: all 0.2s;
-    }
+.card{
+    background:#111a2e;
+    border:2px solid #00ffcc;
+    border-radius:15px;
+    padding:20px;
+    margin-top:20px;
+    box-shadow:0 0 20px #00ffcc;
+}
 
-    button:hover {
-      background-color: #00ffcc;
-      color: #001f2f;
-    }
+button{
+    background:#00ffcc;
+    border:none;
+    padding:10px 20px;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:bold;
+    margin-top:10px;
+}
 
-    input {
-      padding: 10px;
-      margin: 8px 0;
-      border-radius: 8px;
-      border: 2px solid #00ffcc;
-      background-color: #0f0f1a;
-      color: #00ffcc;
-      width: 90%;
-    }
+button:hover{
+    background:#00ffaa;
+}
 
-    .pix-section {
-      background-color: #0f0f1a;
-      color: #00ffcc;
-      padding: 20px;
-      border-radius: 15px;
-      text-align: center;
-      margin-top: 30px;
-    }
+input{
+    width:90%;
+    padding:10px;
+    margin:5px;
+    border-radius:10px;
+    border:none;
+}
 
-    .pix-section img {
-      width: 200px;
-      border: 2px solid #00ffcc;
-      border-radius: 10px;
-      margin-top: 10px;
-    }
-
-    @media (max-width:600px) {
-      button {
-        width: 90%;
-      }
-      input {
-        width: 95%;
-      }
-    }
-  </style>
+img{
+    width:100%;
+    border-radius:15px;
+}
+</style>
 </head>
+
 <body>
-  <div class="container">
-    <h1>Nexus Studios</h1>
-    <h2>Faça login ou crie sua conta</h2>
 
-    <!-- --- Formulário de Login / Criar Conta --- -->
-    <input type="email" id="email" placeholder="Digite seu e-mail">
-    <input type="password" id="senha" placeholder="Digite sua senha">
-    <div>
-      <button onclick="criarConta()">Criar Conta</button>
-      <button onclick="entrar()">Entrar</button>
-    </div>
+<div class="container">
 
-    <div id="status"></div>
+<h1 style="color:#00ffcc;">NEXO Studio</h1>
 
-    <!-- --- Torneios Disponíveis --- -->
-    <h2>Torneios Disponíveis</h2>
-    <div id="torneios">
-      <!-- Será preenchido via JavaScript com os torneios do Firebase -->
-    </div>
+<div id="loginDiv">
+<h2>Entrar</h2>
+<input type="email" id="email" placeholder="Seu e-mail">
+<input type="password" id="senha" placeholder="Sua senha">
+<br>
+<button onclick="login()">Entrar</button>
+</div>
 
-    <!-- --- Seção Pix --- -->
-    <div class="pix-section">
-      <h2>Pagamento via Pix</h2>
-      <p>Para confirmar sua inscrição, envie o valor da taxa para o Pix abaixo:</p>
-      <!-- TROQUE AQUI PELA SUA CHAVE PIX -->
-      <p style="font-size:18px; font-weight:bold;">Chave Pix: <span id="pixKey">bernardmachado14@gmail.com</span></p>
-      <p>Ou escaneie o QR Code:</p>
-      <!-- TROQUE AQUI PELO LINK DO SEU QR CODE -->
-      <img src="https://drive.google.com/uc?export=view&id=13Rx8r9RYnCtdava5PhQUYti1MAjyI39c" alt="Pix QR Code">
-      <p style="margin-top:15px; font-style:italic;">
-        Após o pagamento, aguarde a confirmação da inscrição.
-      </p>
-    </div>
-  </div>
+<div id="torneioDiv" style="display:none;">
+<div class="card">
+<img src="https://supercell.com/en/games/brawlstars/">
 
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<h2>Brawl Stars Cup NS</h2>
 
-  <script>
-    // --- CONFIGURAÇÕES DO SEU FIREBASE ---
-    const firebaseConfig = {
-      apiKey: "AIzaSyDj5-aBr2n_wg80HswcaIOjetm7DtxILSI",
-      authDomain: "nexostudios-site-e9458.firebaseapp.com",
-      projectId: "nexostudios-site-e9458",
-      storageBucket: "nexostudios-site-e9458.firebasestorage.app",
-      messagingSenderId: "247851109985",
-      appId: "1:247851109985:web:1b8903891240c55a376420"
-    };
+<p><b>Entrada:</b> R$ 0,50</p>
+<p><b>1º:</b> R$ 10</p>
+<p><b>2º:</b> R$ 3</p>
+<p><b>3º:</b> R$ 1</p>
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+<p id="vagas"></p>
 
-    // --- CRIAR CONTA ---
-    function criarConta() {
-      const email = document.getElementById("email").value;
-      const senha = document.getElementById("senha").value;
+<button onclick="inscrever()">Inscrever-se</button>
+</div>
+</div>
 
-      auth.createUserWithEmailAndPassword(email, senha)
-        .then((userCredential) => {
-          document.getElementById("status").innerText = "Conta criada com sucesso!";
-        })
-        .catch((error) => {
-          document.getElementById("status").innerText = error.message;
-        });
-    }
+<div id="pixDiv" style="display:none;">
+<div class="card">
+<h2>Pagamento via Pix</h2>
+<p>Chave Pix:</p>
+<p style="color:#00ffcc;">bernardemachado14@gmail.com</p>
 
-    // --- ENTRAR ---
-    function entrar() {
-      const email = document.getElementById("email").value;
-      const senha = document.getElementById("senha").value;
+<img src="https://drive.google.com/file/d/13Rx8r9RYnCtdava5PhQUYti1MAjyI">
 
-      auth.signInWithEmailAndPassword(email, senha)
-        .then((userCredential) => {
-          document.getElementById("status").innerText = "Você está logado com sucesso!";
-          carregarTorneios();
-        })
-        .catch((error) => {
-          document.getElementById("status").innerText = error.message;
-        });
-    }
+<p>Após pagar, espere aprovação.</p>
+</div>
+</div>
 
-    // --- CARREGAR TORNEIOS DO FIREBASE ---
-    function carregarTorneios() {
-      const torneiosDiv = document.getElementById("torneios");
-      torneiosDiv.innerHTML = ""; // limpa
+</div>
 
-      db.collection("torneios").get().then((snapshot) => {
-        snapshot.forEach((doc) => {
-          const torneio = doc.data();
-          const btn = document.createElement("button");
-          btn.innerText = `${torneio.nome} - Limite: ${torneio.limite} - Taxa: R$${torneio.taxa}`;
-          btn.onclick = () => inscrever(torneio.id);
-          torneiosDiv.appendChild(btn);
-        });
-      });
-    }
+<script type="module">
 
-    // --- INSCRIÇÃO DE TORNEIO ---
-    function inscrever(torneioId) {
-      const user = auth.currentUser;
-      if(!user) {
-        alert("Você precisa estar logado para se inscrever!");
-        return;
-      }
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, collection, getDocs, addDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-      const inscricoesRef = db.collection("torneios").doc(torneioId).collection("inscritos");
+const firebaseConfig = {
+  apiKey: "AIzaSyDj5-aBr2n_wg80HswcaIOjetm7DtxILSI",
+  authDomain: "nexostudios-site-e9458.firebaseapp.com",
+  projectId: "nexostudios-site-e9458",
+  storageBucket: "nexostudios-site-e9458.firebasestorage.app",
+  messagingSenderId: "247851109985",
+  appId: "1:247851109985:web:1b8903891240c55a376420"
+};
 
-      inscricoesRef.get().then(snapshot => {
-        if(snapshot.size >= 10){ // limite de 10
-          alert("Torneio cheio!");
-          return;
-        }
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-        inscricoesRef.doc(user.uid).set({
-          nome: user.displayName || "Sem nome",
-          email: user.email,
-          timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        })
-        .then(() => alert("Inscrição realizada com sucesso!"));
-      });
-    }
+window.login = function(){
+    const email = document.getElementById("email").value;
+    const senha = document.getElementById("senha").value;
 
-    // --- LOGIN AUTOMÁTICO POR 30 DIAS ---
-    auth.onAuthStateChanged(user => {
-      if(user){
-        document.getElementById("status").innerText = "Você já está logado!";
-        carregarTorneios();
-      }
+    signInWithEmailAndPassword(auth,email,senha)
+    .then(()=>{
+        alert("Login realizado!");
+    })
+    .catch(()=>{
+        alert("Erro no login.");
     });
-  </script>
+}
+
+onAuthStateChanged(auth, async (user)=>{
+    if(user){
+        document.getElementById("loginDiv").style.display="none";
+        document.getElementById("torneioDiv").style.display="block";
+
+        const torneioRef = doc(db,"torneios","torneio1");
+        const torneioSnap = await getDoc(torneioRef);
+
+        if(torneioSnap.exists()){
+            const data = torneioSnap.data();
+
+            const inscritosRef = collection(db,"torneios","torneio1","inscritos");
+            const inscritosSnap = await getDocs(inscritosRef);
+
+            document.getElementById("vagas").innerText =
+            "Vagas: "+ inscritosSnap.size + " / " + data.limite;
+        }
+    }
+});
+
+window.inscrever = async function(){
+    const user = auth.currentUser;
+
+    if(!user){
+        alert("Faça login primeiro!");
+        return;
+    }
+
+    const inscritosRef = collection(db,"torneios","torneio1","inscritos");
+
+    await addDoc(inscritosRef,{
+        nome:user.email,
+        email:user.email,
+        status:"aguardando",
+        pixPago:false
+    });
+
+    document.getElementById("pixDiv").style.display="block";
+    alert("Inscrição registrada! Faça o Pix.");
+}
+
+</script>
+
 </body>
 </html>
