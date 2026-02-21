@@ -1,95 +1,215 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Torneios Nexus Studios</title>
-<style>
-  body { background: #0D0D0D; color: #FFF; font-family: Arial, sans-serif; text-align: center; margin:0; padding:0;}
-  h1 { color: #00FFFF; text-shadow: 0 0 10px #39FF14;}
-  button { background: #39FF14; color: #0D0D0D; padding: 12px 24px; margin: 10px; border: none; font-size: 16px; cursor:pointer; border-radius:8px; transition:0.3s;}
-  button:hover { background:#00FFFF; color:#0D0D0D;}
-  .torneio { border: 2px solid #00FFFF; padding: 20px; margin:20px; border-radius:10px;}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nexo Studios - Torneios</title>
+  <style>
+    /* --- Tema Neon Azul e Verde --- */
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #0f0f1a;
+      color: #00ffcc;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h1, h2 {
+      color: #00ffcc;
+      text-shadow: 0 0 5px #00ffcc, 0 0 10px #00ffcc;
+    }
+
+    button {
+      background-color: #001f2f;
+      border: 2px solid #00ffcc;
+      color: #00ffcc;
+      padding: 12px 25px;
+      margin: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.2s;
+    }
+
+    button:hover {
+      background-color: #00ffcc;
+      color: #001f2f;
+    }
+
+    input {
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: 2px solid #00ffcc;
+      background-color: #0f0f1a;
+      color: #00ffcc;
+      width: 90%;
+    }
+
+    .pix-section {
+      background-color: #0f0f1a;
+      color: #00ffcc;
+      padding: 20px;
+      border-radius: 15px;
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    .pix-section img {
+      width: 200px;
+      border: 2px solid #00ffcc;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+
+    @media (max-width:600px) {
+      button {
+        width: 90%;
+      }
+      input {
+        width: 95%;
+      }
+    }
+  </style>
 </head>
 <body>
+  <div class="container">
+    <h1>Nexus Studios</h1>
+    <h2>Faça login ou crie sua conta</h2>
 
-<h1>Torneios Nexus Studios</h1>
+    <!-- --- Formulário de Login / Criar Conta --- -->
+    <input type="email" id="email" placeholder="Digite seu e-mail">
+    <input type="password" id="senha" placeholder="Digite sua senha">
+    <div>
+      <button onclick="criarConta()">Criar Conta</button>
+      <button onclick="entrar()">Entrar</button>
+    </div>
 
-<div id="torneios-container"></div>
+    <div id="status"></div>
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <!-- --- Torneios Disponíveis --- -->
+    <h2>Torneios Disponíveis</h2>
+    <div id="torneios">
+      <!-- Será preenchido via JavaScript com os torneios do Firebase -->
+    </div>
 
-<script>
-  // 🔹 CONFIGURAÇÃO DO FIREBASE
-  const firebaseConfig = {
-    apiKey: "SUA_API_KEY",
-    authDomain: "SEU_AUTH_DOMAIN",
-    projectId: "SEU_PROJECT_ID",
-    storageBucket: "SEU_STORAGE_BUCKET",
-    messagingSenderId: "SEU_MSG_SENDER",
-    appId: "SEU_APP_ID"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-  const auth = firebase.auth();
+    <!-- --- Seção Pix --- -->
+    <div class="pix-section">
+      <h2>Pagamento via Pix</h2>
+      <p>Para confirmar sua inscrição, envie o valor da taxa para o Pix abaixo:</p>
+      <!-- TROQUE AQUI PELA SUA CHAVE PIX -->
+      <p style="font-size:18px; font-weight:bold;">Chave Pix: <span id="pixKey">bernardmachado14@gmail.com</span></p>
+      <p>Ou escaneie o QR Code:</p>
+      <!-- TROQUE AQUI PELO LINK DO SEU QR CODE -->
+      <img src="https://drive.google.com/uc?export=view&id=13Rx8r9RYnCtdava5PhQUYti1MAjyI39c" alt="Pix QR Code">
+      <p style="margin-top:15px; font-style:italic;">
+        Após o pagamento, aguarde a confirmação da inscrição.
+      </p>
+    </div>
+  </div>
 
-  // 🔹 LOGIN AUTOMÁTICO
-  auth.onAuthStateChanged(user => {
-    if(user) {
-      console.log("Usuário logado:", user.email);
-      carregarTorneios();
-    } else {
-      // se não estiver logado, login anônimo temporário
-      auth.signInAnonymously().catch(err => console.log(err));
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    // --- CONFIGURAÇÕES DO SEU FIREBASE ---
+    const firebaseConfig = {
+      apiKey: "SUA_API_KEY",
+      authDomain: "SEU_AUTH_DOMAIN",
+      projectId: "SEU_PROJECT_ID",
+      storageBucket: "SEU_STORAGE_BUCKET",
+      messagingSenderId: "SEU_MESSAGING_SENDER_ID",
+      appId: "SEU_APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // --- CRIAR CONTA ---
+    function criarConta() {
+      const email = document.getElementById("email").value;
+      const senha = document.getElementById("senha").value;
+
+      auth.createUserWithEmailAndPassword(email, senha)
+        .then((userCredential) => {
+          document.getElementById("status").innerText = "Conta criada com sucesso!";
+        })
+        .catch((error) => {
+          document.getElementById("status").innerText = error.message;
+        });
     }
-  });
 
-  // 🔹 CARREGAR TORNEIOS
-  function carregarTorneios(){
-    const container = document.getElementById('torneios-container');
-    container.innerHTML = '';
-    db.collection('torneios').get().then(snapshot => {
-      snapshot.forEach(doc => {
-        const torneio = doc.data();
-        const div = document.createElement('div');
-        div.classList.add('torneio');
-        div.innerHTML = `
-          <h2>${torneio.nome}</h2>
-          <p>Taxa de inscrição: R$${torneio.taxa.toFixed(2)}</p>
-          <p>Limite: ${torneio.limite} participantes</p>
-          <button onclick="inscrever('${doc.id}', '${torneio.nome}', ${torneio.limite})">Inscrever-se</button>
-        `;
-        container.appendChild(div);
+    // --- ENTRAR ---
+    function entrar() {
+      const email = document.getElementById("email").value;
+      const senha = document.getElementById("senha").value;
+
+      auth.signInWithEmailAndPassword(email, senha)
+        .then((userCredential) => {
+          document.getElementById("status").innerText = "Você está logado com sucesso!";
+          carregarTorneios();
+        })
+        .catch((error) => {
+          document.getElementById("status").innerText = error.message;
+        });
+    }
+
+    // --- CARREGAR TORNEIOS DO FIREBASE ---
+    function carregarTorneios() {
+      const torneiosDiv = document.getElementById("torneios");
+      torneiosDiv.innerHTML = ""; // limpa
+
+      db.collection("torneios").get().then((snapshot) => {
+        snapshot.forEach((doc) => {
+          const torneio = doc.data();
+          const btn = document.createElement("button");
+          btn.innerText = `${torneio.nome} - Limite: ${torneio.limite} - Taxa: R$${torneio.taxa}`;
+          btn.onclick = () => inscrever(torneio.id);
+          torneiosDiv.appendChild(btn);
+        });
       });
-    });
-  }
+    }
 
-  // 🔹 FUNÇÃO INSCRIÇÃO
-  function inscrever(torneioId, torneioNome, limite){
-    const user = auth.currentUser;
-    if(!user) { alert('Erro: usuário não encontrado'); return; }
-
-    // checar inscritos atuais
-    db.collection('torneios').doc(torneioId).collection('inscritos').get().then(snap => {
-      if(snap.size >= limite){
-        alert('Inscrições encerradas!');
+    // --- INSCRIÇÃO DE TORNEIO ---
+    function inscrever(torneioId) {
+      const user = auth.currentUser;
+      if(!user) {
+        alert("Você precisa estar logado para se inscrever!");
         return;
       }
-      const nome = prompt("Digite seu nome:");
-      const username = prompt("Digite seu username:");
-      const email = prompt("Digite seu e-mail:");
 
-      db.collection('torneios').doc(torneioId).collection('inscritos').add({
-        nome, username, email, status:false, pix:false
-      }).then(() => {
-        alert(`Você foi inscrito com sucesso no torneio "${torneioNome}"! Aguarde confirmação do Pix.`);
+      const inscricoesRef = db.collection("torneios").doc(torneioId).collection("inscritos");
+
+      inscricoesRef.get().then(snapshot => {
+        if(snapshot.size >= 10){ // limite de 10
+          alert("Torneio cheio!");
+          return;
+        }
+
+        inscricoesRef.doc(user.uid).set({
+          nome: user.displayName || "Sem nome",
+          email: user.email,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        })
+        .then(() => alert("Inscrição realizada com sucesso!"));
       });
+    }
+
+    // --- LOGIN AUTOMÁTICO POR 30 DIAS ---
+    auth.onAuthStateChanged(user => {
+      if(user){
+        document.getElementById("status").innerText = "Você já está logado!";
+        carregarTorneios();
+      }
     });
-  }
-</script>
+  </script>
 </body>
 </html>
