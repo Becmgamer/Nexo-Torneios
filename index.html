@@ -7,8 +7,8 @@
 <style>
   body { background: #0a0a1f; color: #00ffcc; font-family: Arial, sans-serif; padding: 20px; }
   h1, h2, h3 { color: #00ffcc; }
-  input { display: block; margin: 10px 0; padding: 8px; width: 100%; border-radius: 5px; border: 1px solid #00ffcc; background: #111; color: #00ffcc; }
-  button { background: #00ffcc; border: none; padding: 10px 20px; margin: 5px 0; cursor: pointer; border-radius: 5px; color: #000; font-weight: bold; width: 100%; }
+  input { display: inline-block; margin: 10px 0; padding: 8px; width: calc(70% - 10px); border-radius: 5px; border: 1px solid #00ffcc; background: #111; color: #00ffcc; }
+  button { background: #00ffcc; border: none; padding: 10px; margin: 5px 0; cursor: pointer; border-radius: 5px; color: #000; font-weight: bold; }
   .torneio { border: 2px solid #00ffcc; padding: 15px; margin: 10px 0; border-radius: 10px; }
   img { max-width: 100%; border-radius: 10px; }
 </style>
@@ -21,7 +21,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getFirestore, collection, doc, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getFirestore, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
 // Config Firebase
@@ -52,7 +52,7 @@ onAuthStateChanged(auth, (user) => {
 });
 
 // Carregar torneios
-async function carregarTorneios(){
+function carregarTorneios(){
   const container = document.getElementById('torneiosContainer');
   container.innerHTML = `
     <div class="torneio">
@@ -61,11 +61,37 @@ async function carregarTorneios(){
       <p>Data: 1º de março às 16h e 2 de março às 16h</p>
       <p>Taxa de inscrição: R$ 0,50</p>
       <p>Prêmios: 1º: R$ 10, 2º: R$ 3, 3º: R$ 1</p>
-      <input type="text" id="telefone0" placeholder="Digite seu número para contato" />
+      <div style="display: flex; gap: 5px; align-items: center;">
+        <input type="text" id="telefone0" placeholder="Digite seu número para contato">
+        <button onclick="enviarNumero()">Enviar</button>
+      </div>
       <button onclick="inscreverPix()">Pagar via Pix</button>
       <button onclick="inscreverPresencial()">Pago pessoalmente</button>
     </div>
   `;
+}
+
+// Enviar número para suporte
+async function enviarNumero(){
+  if(!usuarioLogado){
+    alert("Faça login primeiro!");
+    return;
+  }
+  const telefone = document.getElementById("telefone0").value;
+  if(!telefone){
+    alert("Digite seu número!");
+    return;
+  }
+
+  const suporteRef = doc(db, "suporte", usuarioLogado.uid);
+  await updateDoc(suporteRef, { telefone }).catch(async () => {
+    // Se não existir, cria
+    await updateDoc(suporteRef, { telefone }).catch(async () => {
+      await setDoc(suporteRef, { telefone });
+    });
+  });
+
+  alert("Número enviado para suporte!");
 }
 
 // Inscrição via Pix
@@ -81,10 +107,11 @@ async function inscreverPix(){
   }
 
   const torneioRef = doc(db, "torneios", "BrawlStarsCupNS");
-  const torneioSnap = await getDocs(torneioRef);
-  
+  const torneioSnap = await getDoc(torneioRef);
+  const inscritos = torneioSnap.exists() && torneioSnap.data().inscritos ? torneioSnap.data().inscritos : [];
+
   await updateDoc(torneioRef, {
-    inscritos: [...(torneioSnap.data().inscritos || []), {
+    inscritos: [...inscritos, {
       nome: usuarioLogado.displayName || "Nome",
       email: usuarioLogado.email,
       telefone,
@@ -92,6 +119,7 @@ async function inscreverPix(){
       metodo: "Pix"
     }]
   });
+
   alert("Inscrição via Pix enviada! Aguarde confirmação.");
 }
 
@@ -108,10 +136,11 @@ async function inscreverPresencial(){
   }
 
   const torneioRef = doc(db, "torneios", "BrawlStarsCupNS");
-  const torneioSnap = await getDocs(torneioRef);
-  
+  const torneioSnap = await getDoc(torneioRef);
+  const inscritos = torneioSnap.exists() && torneioSnap.data().inscritos ? torneioSnap.data().inscritos : [];
+
   await updateDoc(torneioRef, {
-    inscritos: [...(torneioSnap.data().inscritos || []), {
+    inscritos: [...inscritos, {
       nome: usuarioLogado.displayName || "Nome",
       email: usuarioLogado.email,
       telefone,
@@ -119,9 +148,9 @@ async function inscreverPresencial(){
       metodo: "Presencial"
     }]
   });
+
   alert("Inscrição presencial enviada! Aguarde aprovação.");
 }
-
 </script>
 
 </body>
