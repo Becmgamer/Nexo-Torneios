@@ -3,171 +3,132 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NEXO Studio - Torneios</title>
+<title>Nexo Studios - Torneios</title>
 <style>
-  body { font-family: Arial, sans-serif; background-color: #0d0d2b; color: #00ffcc; margin:0; padding:0;}
-  header { text-align:center; padding:20px; background: #004466; }
-  h1 { margin:0; color:#00ffcc;}
-  .container { padding:20px; max-width:600px; margin:auto; }
-  input, button { padding:10px; margin:5px 0; width:100%; border-radius:5px; border:none;}
-  button { background:#00ffcc; color:#0d0d2b; font-weight:bold; cursor:pointer; transition:0.2s; }
-  button:hover { background:#00ddaa; }
-  .torneio { background:#001122; padding:15px; margin-bottom:15px; border-radius:10px; }
-  .torneio h2 { margin-top:0; }
-  .status { margin-top:10px; font-weight:bold; }
-  @media (max-width:600px){ .container{ padding:10px; } }
+  body { background: #0a0a1f; color: #00ffcc; font-family: Arial, sans-serif; }
+  .torneio { border: 2px solid #00ffcc; padding: 15px; margin: 10px; border-radius: 10px; }
+  button { background: #00ffcc; border: none; padding: 10px 20px; margin: 5px; cursor: pointer; border-radius: 5px; color: #000; font-weight: bold; }
+  button:active { transform: scale(0.95); }
+  img { max-width: 100%; border-radius: 10px; }
 </style>
-<!-- Firebase SDKs -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-
-  // Configuração do Firebase
-  const firebaseConfig = {
-    apiKey: "AIzaSyDj5-aBr2n_wg80HswcaIOjetm7DtxILSI",
-    authDomain: "nexostudios-site-e9458.firebaseapp.com",
-    databaseURL: "https://nexostudios-site-e9458-default-rtdb.firebaseio.com",
-    projectId: "nexostudios-site-e9458",
-    storageBucket: "nexostudios-site-e9458.firebasestorage.app",
-    messagingSenderId: "247851109985",
-    appId: "1:247851109985:web:1b8903891240c55a376420"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const auth = getAuth();
-
-  // Torneios de exemplo
-  const torneios = [
-    {
-      nome:"Brawl Stars Cup NS",
-      data:"01/03/2026 às 16h",
-      taxa:0.5,
-      premios: { primeiro:10, segundo:3, terceiro:1 },
-      vagas:10
-    },
-    {
-      nome:"Minecraft Battle NS",
-      data:"02/03/2026 às 14h",
-      taxa:0.5,
-      premios: { primeiro:10, segundo:3, terceiro:1 },
-      vagas:8
-    }
-  ];
-
-  let usuarioLogado = null;
-
-  // Exibe tela de login/criar conta
-  function mostrarLogin(){
-    document.getElementById('loginDiv').style.display='block';
-    document.getElementById('torneiosDiv').style.display='none';
-  }
-
-  // Exibe torneios
-  function mostrarTorneios(){
-    document.getElementById('loginDiv').style.display='none';
-    const div = document.getElementById('torneiosDiv');
-    div.innerHTML = '';
-    torneios.forEach((t,index)=>{
-      const torneioDiv = document.createElement('div');
-      torneioDiv.className='torneio';
-      torneioDiv.innerHTML=`
-        <h2>${t.nome}</h2>
-        <p><strong>Data:</strong> ${t.data}</p>
-        <p><strong>Taxa de inscrição:</strong> R$ ${t.taxa.toFixed(2)}</p>
-        <p><strong>Prêmios:</strong> 1º R$ ${t.premios.primeiro}, 2º R$ ${t.premios.segundo}, 3º R$ ${t.premios.terceiro}</p>
-        <p><strong>Vagas restantes:</strong> ${t.vagas}</p>
-        <input type="text" id="telefone${index}" placeholder="Seu número para contato">
-        <button onclick="inscrever(${index})">Inscrever-se</button>
-        <div class="status" id="status${index}"></div>
-      `;
-      div.appendChild(torneioDiv);
-    });
-    div.style.display='block';
-  }
-
-  // Criação de conta
-  async function criarConta(){
-    const email = document.getElementById('email').value;
-    const senha = document.getElementById('senha').value;
-    const nome = document.getElementById('nome').value;
-    const username = document.getElementById('username').value;
-    const telefone = document.getElementById('telefone').value;
-    try{
-      const cred = await createUserWithEmailAndPassword(auth,email,senha);
-      usuarioLogado=cred.user;
-      await addDoc(collection(db,'usuarios'),{
-        uid:usuarioLogado.uid,
-        nome:nome,
-        username:username,
-        email:email,
-        telefone:telefone,
-        cashback:0,
-        contato:false
-      });
-      mostrarTorneios();
-    }catch(e){ alert(e.message); }
-  }
-
-  // Login
-  async function login(){
-    const email = document.getElementById('email').value;
-    const senha = document.getElementById('senha').value;
-    try{
-      const cred = await signInWithEmailAndPassword(auth,email,senha);
-      usuarioLogado = cred.user;
-      mostrarTorneios();
-    }catch(e){ alert(e.message); }
-  }
-
-  // Inscrição
-  async function inscrever(index){
-    const t = torneios[index];
-    const telefone = document.getElementById(`telefone${index}`).value;
-    if(!telefone){ alert("Digite seu número!"); return; }
-    if(t.vagas<=0){ alert("Não há vagas disponíveis."); return; }
-
-    try{
-      await addDoc(collection(db,'inscricoes'),{
-        uid:usuarioLogado.uid,
-        torneio:t.nome,
-        email:usuarioLogado.email,
-        username:usuarioLogado.displayName || "",
-        telefone:telefone,
-        status:"aguardando pagamento",
-        metodoPagamento:"",
-        timestamp: new Date()
-      });
-      t.vagas--;
-      document.getElementById(`status${index}`).innerHTML=`Inscrição registrada com sucesso! Aguarde confirmação.`;
-    }catch(e){ console.log(e); }
-  }
-
-  onAuthStateChanged(auth,(user)=>{
-    if(user){ usuarioLogado=user; mostrarTorneios(); }else{ mostrarLogin(); }
-  });
-
-</script>
 </head>
 <body>
-<header><h1>NEXO Studio - Torneios</h1></header>
 
-<div class="container" id="loginDiv">
-  <h2>Entrar ou Criar Conta</h2>
-  <input type="text" id="nome" placeholder="Nome (obrigatório)">
-  <input type="text" id="username" placeholder="Username (obrigatório)">
-  <input type="email" id="email" placeholder="E-mail (obrigatório)">
-  <input type="password" id="senha" placeholder="Senha (obrigatório)">
-  <input type="text" id="telefone" placeholder="Telefone (obrigatório)">
-  <button onclick="criarConta()">Criar Conta</button>
-  <button onclick="login()">Fazer Login</button>
-</div>
+<h1>Nexo Studios - Torneios</h1>
+<div id="torneiosContainer"></div>
 
-<div class="container" id="torneiosDiv" style="display:none;"></div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getFirestore, collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
-<footer class="container" style="text-align:center; margin-top:20px;">
-  <p>Política de Privacidade | Regras do Torneio</p>
-</footer>
+// Config Firebase que você me mandou
+const firebaseConfig = {
+  apiKey: "AIzaSyDj5-aBr2n_wg80HswcaIOjetm7DtxILSI",
+  authDomain: "nexostudios-site-e9458.firebaseapp.com",
+  databaseURL: "https://nexostudios-site-e9458-default-rtdb.firebaseio.com",
+  projectId: "nexostudios-site-e9458",
+  storageBucket: "nexostudios-site-e9458.firebasestorage.app",
+  messagingSenderId: "247851109985",
+  appId: "1:247851109985:web:1b8903891240c55a376420"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+let usuarioLogado = null;
+
+// Detecta login
+onAuthStateChanged(auth, (user) => {
+  if(user){
+    usuarioLogado = user;
+    carregarTorneios();
+  } else {
+    document.getElementById('torneiosContainer').innerHTML = "<p>Faça login para ver os torneios.</p>";
+  }
+});
+
+// Função para carregar torneios
+async function carregarTorneios(){
+  const container = document.getElementById('torneiosContainer');
+  container.innerHTML = "";
+  const torneiosSnapshot = await getDocs(collection(db, "torneios"));
+  torneiosSnapshot.forEach((docT, index) => {
+    const torneio = docT.data();
+    container.innerHTML += `
+      <div class="torneio">
+        <h2>${torneio.nome}</h2>
+        <img src="${torneio.imagem}" alt="${torneio.nome}">
+        <p>Data: ${torneio.data}</p>
+        <p>Taxa de inscrição: R$ ${torneio.taxa}</p>
+        <p>Prêmios: 1º: R$ ${torneio.primeiro}, 2º: R$ ${torneio.segundo}, 3º: R$ ${torneio.terceiro}</p>
+        <p>Vagas disponíveis: ${torneio.limite - (torneio.inscritos ? torneio.inscritos.length : 0)}</p>
+        <input type="text" id="telefone${index}" placeholder="Digite seu número" />
+        <br>
+        <button onclick="window.inscrever(${index}, '${docT.id}')">Inscrever-se via Pix</button>
+        <button onclick="window.inscreverPresencial(${index}, '${docT.id}')">Pago pessoalmente</button>
+      </div>
+    `;
+  });
+}
+
+// Função de inscrição via Pix
+window.inscrever = async function(index, torneioId){
+  if(!usuarioLogado){
+    alert("Faça login primeiro!");
+    return;
+  }
+  const telefone = document.getElementById(`telefone${index}`).value;
+  if(!telefone){
+    alert("Digite seu número para contato!");
+    return;
+  }
+
+  const torneioRef = doc(db, "torneios", torneioId);
+  const torneioSnap = await getDocs(torneioRef);
+  // Adiciona usuário aos inscritos
+  await updateDoc(torneioRef, {
+    inscritos: [...(torneioSnap.data().inscritos || []), {
+      nome: usuarioLogado.displayName || "Nome não definido",
+      email: usuarioLogado.email,
+      username: usuarioLogado.displayName || "Username",
+      telefone,
+      aprovado: false,
+      metodo: "Pix"
+    }]
+  });
+  alert("Inscrição via Pix enviada! Aguarde confirmação.");
+}
+
+// Função de inscrição presencial
+window.inscreverPresencial = async function(index, torneioId){
+  if(!usuarioLogado){
+    alert("Faça login primeiro!");
+    return;
+  }
+  const telefone = document.getElementById(`telefone${index}`).value;
+  if(!telefone){
+    alert("Digite seu número para contato!");
+    return;
+  }
+
+  const torneioRef = doc(db, "torneios", torneioId);
+  const torneioSnap = await getDocs(torneioRef);
+  await updateDoc(torneioRef, {
+    inscritos: [...(torneioSnap.data().inscritos || []), {
+      nome: usuarioLogado.displayName || "Nome não definido",
+      email: usuarioLogado.email,
+      username: usuarioLogado.displayName || "Username",
+      telefone,
+      aprovado: false,
+      metodo: "Presencial"
+    }]
+  });
+  alert("Inscrição presencial enviada! Aguarde confirmação.");
+}
+
+</script>
+
 </body>
 </html>
