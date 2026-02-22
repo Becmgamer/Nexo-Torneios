@@ -1,57 +1,43 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NEXO Studio - Torneios</title>
 
 <style>
 body{
-    background:#0a0f1c;
-    font-family:Arial, sans-serif;
+    background:#0f0f0f;
     color:white;
+    font-family:Arial;
     text-align:center;
 }
-
-.container{
-    max-width:500px;
-    margin:auto;
-    padding:20px;
-}
-
 .card{
-    background:#111a2e;
-    border:2px solid #00ffcc;
-    border-radius:15px;
+    background:#1c1c1c;
+    margin:20px;
     padding:20px;
-    margin-top:20px;
-    box-shadow:0 0 20px #00ffcc;
+    border-radius:15px;
+    box-shadow:0 0 20px #00ffff55;
 }
-
 button{
-    background:#00ffcc;
+    background:linear-gradient(45deg,#00ffff,#00ff88);
     border:none;
     padding:10px 20px;
     border-radius:10px;
     cursor:pointer;
+    margin:10px;
     font-weight:bold;
-    margin-top:10px;
 }
-
-button:hover{
-    background:#00ffaa;
-}
-
 input{
-    width:90%;
-    padding:10px;
+    padding:8px;
     margin:5px;
-    border-radius:10px;
+    border-radius:8px;
     border:none;
 }
-
+.hidden{
+    display:none;
+}
 img{
-    width:100%;
+    width:200px;
     border-radius:15px;
 }
 </style>
@@ -59,123 +45,129 @@ img{
 
 <body>
 
-<div class="container">
+<h1>🎮 NEXO Studio - Torneios</h1>
 
-<h1 style="color:#00ffcc;">NEXO Studio</h1>
-
+<!-- LOGIN -->
 <div id="loginDiv">
-<h2>Entrar</h2>
-<input type="email" id="email" placeholder="Seu e-mail">
-<input type="password" id="senha" placeholder="Sua senha">
-<br>
-<button onclick="login()">Entrar</button>
+    <h2>Login</h2>
+    <input type="email" id="email" placeholder="Digite seu e-mail"><br>
+    <input type="password" id="senha" placeholder="Digite sua senha"><br>
+    <button onclick="login()">Entrar</button>
 </div>
 
-<div id="torneioDiv" style="display:none;">
-<div class="card">
-<img src="https://i.postimg.cc/mgnCQgFL/cropped.webp">
-
-<h2>Brawl Stars Cup NS</h2>
-
-<p><b>Entrada:</b> R$ 0,50</p>
-<p><b>1º:</b> R$ 10</p>
-<p><b>2º:</b> R$ 3</p>
-<p><b>3º:</b> R$ 1</p>
-
-<p id="vagas"></p>
-
-<button onclick="inscrever()">Inscrever-se</button>
-</div>
+<!-- TORNEIOS -->
+<div id="torneiosDiv" class="hidden">
+    <h2>Torneios Disponíveis</h2>
+    <div id="listaTorneios"></div>
 </div>
 
-<div id="pixDiv" style="display:none;">
-<div class="card">
-<h2>Pagamento via Pix</h2>
-<p>Chave Pix:</p>
-<p style="color:#00ffcc;">bernardemachado14@gmail.com</p>
+<!-- PAGAMENTO -->
+<div id="pagamentoDiv" class="hidden">
+    <h2>Escolha a forma de pagamento</h2>
+    
+    <p id="torneioEscolhido"></p>
 
-<img src="https://i.postimg.cc/qMX1XykM/Screenshot-20260221-125915-Inter.jpg">
+    <input type="text" id="telefone" placeholder="Seu número (WhatsApp)" required><br>
 
-<p>Após pagar, espere aprovação.</p>
-</div>
-</div>
+    <button onclick="pagarPix()">💳 Pagar via Pix</button>
+    <button onclick="pagarPessoal()">💵 Pago pessoalmente</button>
 
+    <div id="pixArea" class="hidden">
+        <h3>Pix:</h3>
+        <p>bernardemachado14@gmail.com</p>
+        <img src="https://i.postimg.cc/qMX1XykM/Screenshot-20260221-125915-Inter.jpg">
+        <p>Após pagar, aguarde aprovação.</p>
+    </div>
 </div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, collection, getDocs, addDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, getDocs, addDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDj5-aBr2n_wg80HswcaIOjetm7DtxILSI",
-  authDomain: "nexostudios-site-e9458.firebaseapp.com",
-  projectId: "nexostudios-site-e9458",
-  storageBucket: "nexostudios-site-e9458.firebasestorage.app",
-  messagingSenderId: "247851109985",
-  appId: "1:247851109985:web:1b8903891240c55a376420"
+  apiKey: "SUA_API_KEY",
+  authDomain: "SEU_AUTH_DOMAIN",
+  projectId: "SEU_PROJECT_ID",
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-window.login = function(){
+let usuarioAtual = null;
+let torneioSelecionado = null;
+
+window.login = async function(){
     const email = document.getElementById("email").value;
     const senha = document.getElementById("senha").value;
 
-    signInWithEmailAndPassword(auth,email,senha)
-    .then(()=>{
-        alert("Login realizado!");
-    })
-    .catch(()=>{
-        alert("Erro no login.");
-    });
+    await signInWithEmailAndPassword(auth,email,senha);
 }
 
-onAuthStateChanged(auth, async (user)=>{
+onAuthStateChanged(auth,(user)=>{
     if(user){
-        document.getElementById("loginDiv").style.display="none";
-        document.getElementById("torneioDiv").style.display="block";
-
-        const torneioRef = doc(db,"torneios","torneio1");
-        const torneioSnap = await getDoc(torneioRef);
-
-        if(torneioSnap.exists()){
-            const data = torneioSnap.data();
-
-            const inscritosRef = collection(db,"torneios","torneio1","inscritos");
-            const inscritosSnap = await getDocs(inscritosRef);
-
-            document.getElementById("vagas").innerText =
-            "Vagas: "+ inscritosSnap.size + " / " + data.limite;
-        }
+        usuarioAtual = user;
+        document.getElementById("loginDiv").classList.add("hidden");
+        document.getElementById("torneiosDiv").classList.remove("hidden");
+        carregarTorneios();
     }
 });
 
-window.inscrever = async function(){
-    const user = auth.currentUser;
+async function carregarTorneios(){
+    const querySnapshot = await getDocs(collection(db,"tournaments"));
+    const lista = document.getElementById("listaTorneios");
+    lista.innerHTML="";
 
-    if(!user){
-        alert("Faça login primeiro!");
-        return;
-    }
-
-    const inscritosRef = collection(db,"torneios","torneio1","inscritos");
-
-    await addDoc(inscritosRef,{
-        nome:user.email,
-        email:user.email,
-        status:"aguardando",
-        pixPago:false
+    querySnapshot.forEach((docu)=>{
+        const data = docu.data();
+        if(data.ativo){
+            lista.innerHTML += `
+            <div class="card">
+                <img src="${data.imagem}">
+                <h3>${data.nome}</h3>
+                <p>📅 Data: ${data.data}</p>
+                <p>💰 Taxa: R$ ${data.taxa}</p>
+                <p>🏆 1º: R$ ${data.premio1}</p>
+                <p>🥈 2º: R$ ${data.premio2}</p>
+                <p>🥉 3º: R$ ${data.premio3}</p>
+                <button onclick="inscrever('${docu.id}','${data.nome}')">Inscrever-se</button>
+            </div>
+            `;
+        }
     });
+}
 
-    document.getElementById("pixDiv").style.display="block";
-    alert("Inscrição registrada! Faça o Pix.");
+window.inscrever = function(id,nome){
+    torneioSelecionado = id;
+    document.getElementById("pagamentoDiv").classList.remove("hidden");
+    document.getElementById("torneioEscolhido").innerText = "Torneio: "+nome;
+}
+
+window.pagarPix = async function(){
+    document.getElementById("pixArea").classList.remove("hidden");
+    await salvarInscricao("pix");
+}
+
+window.pagarPessoal = async function(){
+    await salvarInscricao("pessoal");
+    alert("Inscrição enviada. Aguarde confirmação.");
+}
+
+async function salvarInscricao(tipo){
+    const telefone = document.getElementById("telefone").value;
+
+    await addDoc(collection(db,"tournaments",torneioSelecionado,"inscritos"),{
+        uid: usuarioAtual.uid,
+        email: usuarioAtual.email,
+        telefone: telefone,
+        pagamento: tipo,
+        aprovado: false,
+        data: new Date()
+    });
 }
 
 </script>
-
 </body>
 </html>
