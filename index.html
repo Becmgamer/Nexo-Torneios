@@ -1,131 +1,126 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>NEXO Studios - Torneio</title>
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Torneio Brawl Stars - Nexo Studios</title>
 
 <style>
 body{
-    margin:0;
-    font-family:Arial, sans-serif;
-    background:#0a0f1c;
-    color:white;
-    text-align:center;
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  color:white;
+  text-align:center;
 }
 
 .container{
-    padding:20px;
+  padding:20px;
 }
 
-.card{
-    background:#111a2e;
-    border:2px solid #00ffcc;
-    border-radius:15px;
-    padding:20px;
-    margin:20px auto;
-    max-width:400px;
-    box-shadow:0 0 15px #00ffcc;
+input, button{
+  padding:12px;
+  margin:8px 0;
+  border-radius:8px;
+  border:none;
+  font-size:16px;
+  width:90%;
+  max-width:300px;
 }
 
 button{
-    background:#00ffcc;
-    color:black;
-    border:none;
-    padding:12px 20px;
-    margin:10px;
-    border-radius:8px;
-    font-weight:bold;
-    cursor:pointer;
+  background:#00c6ff;
+  color:white;
+  cursor:pointer;
 }
 
 button:hover{
-    background:#00ffaa;
+  opacity:0.9;
 }
 
-input{
-    padding:10px;
-    margin:8px;
-    border-radius:6px;
-    border:none;
-    width:80%;
-}
-
-.hidden{
-    display:none;
+.card{
+  background:rgba(255,255,255,0.1);
+  padding:15px;
+  border-radius:12px;
+  margin:15px auto;
+  max-width:400px;
 }
 
 img{
-    max-width:200px;
-    margin-top:15px;
-    border-radius:10px;
+  width:100%;
+  border-radius:10px;
+}
+
+#telaParabens{
+  display:none;
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  background:black;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  z-index:9999;
+}
+
+canvas{
+  position:absolute;
+  top:0;
+  left:0;
 }
 </style>
-
 </head>
 <body>
 
 <div class="container">
 
-<h1 style="color:#00ffcc;">NEXO Studios</h1>
+<h2>🏆 Torneio de Brawl Stars</h2>
 
-<div id="loginDiv">
-    <h3>Entrar</h3>
-    <input type="email" id="email" placeholder="Seu email"><br>
-    <input type="password" id="senha" placeholder="Sua senha"><br>
-    <button onclick="login()">Entrar</button>
+<!-- LOGIN -->
+<div id="login">
+<input type="text" id="telefone" placeholder="Digite seu número com DDD">
+<br>
+<button onclick="fazerLogin()">Entrar</button>
 </div>
 
-<div id="torneioDiv" class="hidden">
-    <div class="card">
-        <h2 id="nomeTorneio"></h2>
-        <p><strong>Data:</strong> <span id="dataTorneio"></span></p>
-        <p><strong>Taxa:</strong> R$ <span id="taxaTorneio"></span></p>
-        <p><strong>Prêmios:</strong></p>
-        <p>🥇 R$ <span id="p1"></span></p>
-        <p>🥈 R$ <span id="p2"></span></p>
-        <p>🥉 R$ <span id="p3"></span></p>
-        <p><strong>Vagas:</strong> <span id="vagas"></span></p>
+<!-- TORNEIO -->
+<div id="torneio" style="display:none;">
+<div class="card">
 
-        <button onclick="mostrarPagamento()">Inscrever-se</button>
-    </div>
+<img src="https://i.postimg.cc/vBDwTGw1/cropped.webp">
+
+<h3>Torneio Oficial</h3>
+<p><b>Data:</b> 1º de Março às 16:00</p>
+<p><b>Taxa:</b> R$ 5,00</p>
+<p><b>Vagas:</b> <span id="vagas">Carregando...</span></p>
+
+<button onclick="pagarPix()">Pagar via Pix</button>
+<button onclick="pagarPessoal()">Pago pessoalmente</button>
+
 </div>
-
-<div id="pagamentoDiv" class="hidden">
-    <div class="card">
-        <h3>Pagamento</h3>
-        <p>Pix:</p>
-        <p><strong>bernardemachado14@gmail.com</strong></p>
-
-        <img src="https://i.postimg.cc/Prs0sWxc/qrcode-pix.png">
-
-        <input type="text" id="telefone" placeholder="Seu telefone para contato">
-
-        <br>
-        <button onclick="confirmarPix()">Pagar via Pix</button>
-        <button onclick="pagarPessoal()">Pago pessoalmente</button>
-    </div>
-</div>
-
-<div id="sucessoDiv" class="hidden">
-    <div class="card">
-        <h2>Inscrição enviada!</h2>
-        <p>Após o pagamento, aguarde confirmação.</p>
-    </div>
 </div>
 
 </div>
 
+<!-- TELA PARABÉNS -->
+<div id="telaParabens">
+<h1>🎉 PARABÉNS! 🎉</h1>
+<p>Você foi aprovado no torneio!</p>
+<button onclick="voltarInicio()">Voltar ao início</button>
+<canvas id="confete"></canvas>
+</div>
+
+<!-- FIREBASE -->
 <script type="module">
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, doc, getDoc, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+// 🔥 COLE SUA CONFIG AQUI
 const firebaseConfig = {
   apiKey: "AIzaSyDj5-aBr2n_wg80HswcaIOjetm7DtxILSI",
   authDomain: "nexostudios-site-e9458.firebaseapp.com",
+  databaseURL: "https://nexostudios-site-e9458-default-rtdb.firebaseio.com",
   projectId: "nexostudios-site-e9458",
   storageBucket: "nexostudios-site-e9458.firebasestorage.app",
   messagingSenderId: "247851109985",
@@ -133,77 +128,96 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth();
-const db = getFirestore();
+const db = getFirestore(app);
 
-let userAtual = null;
-let torneioID = "brawlstarscup";
+let telefoneAtual = "";
+let vagasRestantes = 20;
 
-onAuthStateChanged(auth, async (user) => {
-    if(user){
-        userAtual = user;
-        document.getElementById("loginDiv").classList.add("hidden");
-        document.getElementById("torneioDiv").classList.remove("hidden");
-        carregarTorneio();
-    }
-});
+// LOGIN
+window.fazerLogin = async function(){
+  telefoneAtual = document.getElementById("telefone").value;
 
-window.login = function(){
-    const email = document.getElementById("email").value;
-    const senha = document.getElementById("senha").value;
+  if(telefoneAtual.length < 10){
+    alert("Digite número válido");
+    return;
+  }
 
-    signInWithEmailAndPassword(auth, email, senha)
-    .catch(error => alert("Erro ao entrar"));
+  document.getElementById("login").style.display="none";
+  document.getElementById("torneio").style.display="block";
+
+  document.getElementById("vagas").innerText = vagasRestantes;
 }
 
-async function carregarTorneio(){
-    const docRef = doc(db, "torneios", torneioID);
-    const docSnap = await getDoc(docRef);
-
-    if(docSnap.exists()){
-        const dados = docSnap.data();
-
-        document.getElementById("nomeTorneio").innerText = dados.nome;
-        document.getElementById("dataTorneio").innerText = "01/03/2026 - 16:00";
-        document.getElementById("taxaTorneio").innerText = dados.taxa;
-        document.getElementById("p1").innerText = dados.premio1;
-        document.getElementById("p2").innerText = dados.premio2;
-        document.getElementById("p3").innerText = dados.premio3;
-
-        const inscritosRef = collection(db, "torneios", torneioID, "inscritos");
-        const inscritosSnap = await getDocs(inscritosRef);
-
-        document.getElementById("vagas").innerText = inscritosSnap.size + "/" + dados.limite;
-    }
+// PIX
+window.pagarPix = async function(){
+  await salvarInscricao("Pix");
 }
 
-window.mostrarPagamento = function(){
-    document.getElementById("torneioDiv").classList.add("hidden");
-    document.getElementById("pagamentoDiv").classList.remove("hidden");
-}
-
-window.confirmarPix = async function(){
-    salvarInscricao("pix");
-}
-
+// PESSOAL
 window.pagarPessoal = async function(){
-    salvarInscricao("pessoal");
+  await salvarInscricao("Pessoalmente");
 }
 
 async function salvarInscricao(tipo){
-    const telefone = document.getElementById("telefone").value;
+  if(vagasRestantes <= 0){
+    alert("Sem vagas!");
+    return;
+  }
 
-    await addDoc(collection(db, "torneios", torneioID, "inscritos"),{
-        uid: userAtual.uid,
-        email: userAtual.email,
-        telefone: telefone,
-        pagamento: tipo,
-        aprovado: false,
-        data: new Date()
+  await setDoc(doc(db,"inscricoes",telefoneAtual),{
+    telefone: telefoneAtual,
+    pagamento: tipo,
+    aprovado: true,
+    data: new Date()
+  });
+
+  vagasRestantes--;
+  document.getElementById("vagas").innerText = vagasRestantes;
+
+  mostrarParabens();
+}
+
+// PARABÉNS
+window.mostrarParabens = function(){
+  document.getElementById("telaParabens").style.display="flex";
+  iniciarConfete();
+}
+
+window.voltarInicio = function(){
+  window.location.href="https://sites.google.com/view/nexostudios/in%C3%ADcio";
+}
+
+// CONFETE
+function iniciarConfete(){
+  const canvas = document.getElementById("confete");
+  const ctx = canvas.getContext("2d");
+
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  let confetes=[];
+
+  for(let i=0;i<100;i++){
+    confetes.push({
+      x:Math.random()*canvas.width,
+      y:Math.random()*canvas.height,
+      r:Math.random()*6+4
     });
+  }
 
-    document.getElementById("pagamentoDiv").classList.add("hidden");
-    document.getElementById("sucessoDiv").classList.remove("hidden");
+  function desenhar(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle="white";
+    for(let c of confetes){
+      ctx.beginPath();
+      ctx.arc(c.x,c.y,c.r,0,Math.PI*2);
+      ctx.fill();
+      c.y+=3;
+      if(c.y>canvas.height) c.y=0;
+    }
+  }
+
+  setInterval(desenhar,20);
 }
 
 </script>
