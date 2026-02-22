@@ -13,7 +13,7 @@
   .torneio { border: 2px solid #00ffcc; padding: 15px; margin: 10px 0; border-radius: 10px; }
   img { max-width: 100%; border-radius: 10px; }
   #qrContainer { display: none; margin-top: 10px; }
-  #qrCodeImg { width: 200px; height: 200px; object-fit: contain; } /* Ajuste do tamanho do QR Code */
+  #qrCodeImg { width: 200px; height: 200px; object-fit: contain; }
   .mensagem { color: #00ffcc; margin-top: 10px; }
 </style>
 </head>
@@ -31,7 +31,7 @@
 
 <div id="qrContainer">
   <h3>Pix</h3>
-  <img id="qrCodeImg" src="https://drive.google.com/uc?export=view&id=13Rx8r9RYnCtdava5PhQUYti1MAjyI39c" alt="QR Code Pix">
+  <img id="qrCodeImg" src="https://i.postimg.cc/vBDwTGw1/cropped.webp" alt="QR Code Pix">
   <button id="copiarPixBtn">Copiar Pix</button>
 </div>
 
@@ -172,15 +172,13 @@ function mostrarPix(){
   document.getElementById('qrContainer').style.display = "block";
 }
 
-// Copiar Pix
+// Copiar Pix - versão moderna
 function copiarPix(){
-  const input = document.createElement('input');
-  input.value = "Bernardmachado14@gmail.com";
-  document.body.appendChild(input);
-  input.select();
-  document.execCommand('copy');
-  document.body.removeChild(input);
-  alert("Pix copiado!");
+  navigator.clipboard.writeText("Bernardmachado14@gmail.com").then(() => {
+    alert("Pix copiado!");
+  }).catch(() => {
+    alert("Falha ao copiar Pix!");
+  });
 }
 document.getElementById("copiarPixBtn").addEventListener("click", copiarPix);
 
