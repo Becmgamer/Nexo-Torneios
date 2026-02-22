@@ -3,67 +3,74 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NEXO Studio</title>
+<title>NEXO Studios - Torneios</title>
 
 <style>
 body{
-background:#0f0f1a;
+background:#0f0f0f;
 color:white;
 font-family:Arial;
 margin:0;
 padding:0;
+}
+
+header{
+background:#00ffcc;
+color:black;
+padding:15px;
 text-align:center;
+font-size:22px;
+font-weight:bold;
 }
 
 .container{
 padding:20px;
 }
 
-input{
-width:90%;
-padding:12px;
-margin:8px;
-border:none;
-border-radius:8px;
+.card{
+background:#1a1a1a;
+border:2px solid #00ffcc;
+border-radius:15px;
+padding:15px;
+margin-bottom:20px;
+box-shadow:0 0 15px #00ffcc;
 }
 
 button{
-padding:14px;
-margin:10px;
-width:90%;
+background:#00ffcc;
 border:none;
+padding:10px 15px;
 border-radius:10px;
-font-weight:bold;
 cursor:pointer;
+font-weight:bold;
+margin-top:10px;
 }
 
-.login-btn{
-background:#00f2ff;
-color:black;
+button:hover{
+background:#00ffaa;
 }
 
-.pix-btn{
-background:#00ff88;
-color:black;
+input{
+width:100%;
+padding:10px;
+margin-top:10px;
+border-radius:8px;
+border:none;
 }
 
-.cash-btn{
-background:#0088ff;
-color:white;
+.pix-box{
+display:none;
+margin-top:15px;
+background:#111;
+padding:10px;
+border-radius:10px;
+border:1px solid #00ffcc;
 }
-
-.card{
-background:#1c1c2e;
-padding:15px;
-margin:15px;
-border-radius:12px;
-box-shadow:0 0 15px #00f2ff;
-}
-
-.footer{
+footer{
 margin-top:40px;
+text-align:center;
 font-size:12px;
-opacity:0.7;
+color:gray;
 padding:20px;
 border-top:1px solid #333;
 }
@@ -71,110 +78,130 @@ border-top:1px solid #333;
 </head>
 <body>
 
-<div class="container" id="authArea">
+<header>NEXO Studios - Torneios</header>
 
-<h2>NEXO Studio Login</h2>
+<div class="container">
 
-<input type="text" id="nome" placeholder="Seu Nome">
-<input type="text" id="numero" placeholder="Seu WhatsApp">
-<input type="email" id="email" placeholder="Seu Email">
-<input type="password" id="senha" placeholder="Sua Senha">
+<div id="loginBox">
+<h2>Login</h2>
+<input type="email" id="email" placeholder="Digite seu email">
+<input type="password" id="senha" placeholder="Digite sua senha">
+<button onclick="login()">Entrar</button>
+</div>
 
-<button class="login-btn" onclick="registrar()">Entrar / Criar Conta</button>
+<div id="torneiosArea" style="display:none;"></div>
 
 </div>
 
-<div class="container" id="torneiosArea" style="display:none;">
-<h2>Torneios Disponíveis</h2>
-
-<div class="card">
-<img src="https://i.postimg.cc/mgnCQgFL/cropped.webp" width="100%">
-<h3>Brawl Stars Cup NS</h3>
-<p>Data: 25/02 às 18:00</p>
-<p>Taxa: R$0,50</p>
-<p>1º Lugar: R$10</p>
-<p>2º Lugar: R$3</p>
-<p>3º Lugar: R$1</p>
-
-<button class="pix-btn" onclick="pagarPix()">Pagar via Pix</button>
-<button class="cash-btn" onclick="pagarDinheiro()">Pago pessoalmente</button>
-</div>
-
-<div id="pixArea" style="display:none;">
-<h3>Pagamento via Pix</h3>
-<p>Chave Pix:</p>
-<p><b>bernardemachado14@gmail.com</b></p>
-<img src="https://i.postimg.cc/qMX1XykM/Screenshot-20260221-125915-Inter.jpg" width="250">
-<p>Após pagar, aguarde aprovação.</p>
-</div>
-
-</div>
-
-<div class="footer">
-<p>© 2026 NEXO Studio</p>
-
-<h4>Política de Privacidade</h4>
-<p>Coletamos nome, email e número apenas para organização do torneio.</p>
-
-<h4>Regras do Torneio</h4>
-<p>Respeito obrigatório. Pagamento necessário para participação.
-O organizador pode aprovar manualmente os participantes.</p>
-
-</div>
+<footer>
+Política de Privacidade | Regras do Torneio<br>
+O telefone é coletado apenas para contato sobre o torneio.
+</footer>
 
 <script type="module">
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, collection, getDocs, addDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDj5-aBr2n_wg80HswcaIOjetm7DtxILSI",
-  authDomain: "nexostudios-site-e9458.firebaseapp.com",
-  projectId: "nexostudios-site-e9458",
-  storageBucket: "nexostudios-site-e9458.appspot.com",
-  messagingSenderId: "247851109985",
-  appId: "1:247851109985:web:1b8903891240c55a376420"
+apiKey: "SUA_API_KEY",
+authDomain: "SEU_AUTH_DOMAIN",
+projectId: "SEU_PROJECT_ID",
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-window.registrar = async function(){
+window.login = async function(){
+const email = document.getElementById("email").value;
+const senha = document.getElementById("senha").value;
+await signInWithEmailAndPassword(auth,email,senha);
+}
 
-let nome = document.getElementById("nome").value;
-let numero = document.getElementById("numero").value;
-let email = document.getElementById("email").value;
-let senha = document.getElementById("senha").value;
-
-try{
-let user = await createUserWithEmailAndPassword(auth,email,senha);
-
-await addDoc(collection(db,"usuarios"),{
-nome:nome,
-numero:numero,
-email:email
+onAuthStateChanged(auth,(user)=>{
+if(user){
+document.getElementById("loginBox").style.display="none";
+carregarTorneios();
+}
 });
 
-alert("Conta criada!");
-document.getElementById("authArea").style.display="none";
-document.getElementById("torneiosArea").style.display="block";
+async function carregarTorneios(){
+const area = document.getElementById("torneiosArea");
+area.style.display="block";
+area.innerHTML="";
 
-}catch(e){
-alert("Erro: "+e.message);
-}
+const querySnapshot = await getDocs(collection(db,"torneios"));
+
+querySnapshot.forEach(async(docSnap)=>{
+const data = docSnap.data();
+
+const inscritosRef = collection(db,"torneios",docSnap.id,"inscritos");
+const inscritosSnap = await getDocs(inscritosRef);
+
+const vagas = inscritosSnap.size;
+
+area.innerHTML += `
+<div class="card">
+<h2>${data.nome}</h2>
+<p>📅 Inscrições até: ${data.dataInscricao}</p>
+<p>🎮 Torneio: ${data.dataTorneio}</p>
+<p>💰 Taxa: R$ ${data.taxa}</p>
+<p>🏆 1º: R$ ${data.primeiro}</p>
+<p>🥈 2º: R$ ${data.segundo}</p>
+<p>🥉 3º: R$ ${data.terceiro}</p>
+<p>👥 Vagas: ${vagas} / ${data.limite}</p>
+
+<input id="telefone-${docSnap.id}" placeholder="Seu telefone">
+
+<button onclick="inscrever('${docSnap.id}','pix')">Pagar via Pix</button>
+<button onclick="inscrever('${docSnap.id}','pessoal')">Pago pessoalmente</button>
+
+<div class="pix-box" id="pix-${docSnap.id}">
+<p>Faça o Pix para:</p>
+<p><b>bernardemachado14@gmail.com</b></p>
+<img src="https://i.postimg.cc/qMX1XykM/Screenshot-20260221-125915-Inter.jpg" width="200">
+<p>Após o pagamento, aguarde aprovação.</p>
+</div>
+</div>
+`;
+});
 }
 
-window.pagarPix = function(){
-document.getElementById("pixArea").style.display="block";
+window.inscrever = async function(id,metodo){
+const user = auth.currentUser;
+const telefone = document.getElementById("telefone-"+id).value;
+
+const inscritosRef = collection(db,"torneios",id,"inscritos");
+const inscritosSnap = await getDocs(inscritosRef);
+const torneioDoc = await getDoc(doc(db,"torneios",id));
+const limite = torneioDoc.data().limite;
+
+if(inscritosSnap.size >= limite){
+alert("Inscrições encerradas!");
+return;
 }
 
-window.pagarDinheiro = function(){
-alert("Pagamento marcado como dinheiro. Aguarde aprovação manual.");
+await addDoc(inscritosRef,{
+nome:user.email,
+email:user.email,
+telefone:telefone,
+pagamento:metodo,
+status:"pendente",
+data:new Date()
+});
+
+if(metodo==="pix"){
+document.getElementById("pix-"+id).style.display="block";
+}else{
+alert("Aguarde aprovação manual.");
+}
+
+alert("Inscrição enviada!");
+carregarTorneios();
 }
 
 </script>
-
 </body>
 </html>
