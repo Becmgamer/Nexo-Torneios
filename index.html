@@ -28,8 +28,8 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getFirestore, collection, doc, setDoc, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { getFirestore, setDoc, doc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
 // Firebase Config
 const firebaseConfig = {
@@ -54,7 +54,7 @@ onAuthStateChanged(auth, (user) => {
     usuarioLogado = user;
     document.getElementById('authContainer').style.display = "none";
     document.getElementById('formContainer').innerHTML = "";
-    carregarTorneios();
+    mostrarTorneio();
   }
 });
 
@@ -123,65 +123,36 @@ async function login(){
   }
 }
 
-// Carregar torneios
-async function carregarTorneios(){
+// Mostrar torneio Dia 1 e 2 juntos
+function mostrarTorneio(){
   const container = document.getElementById('torneiosContainer');
-  container.innerHTML = "<h2>Torneios Disponíveis</h2>";
-
-  // Definindo os dois torneios fixos
-  const torneiosFixos = [
-    {
-      nome: "Brawl Stars Cup NS - Dia 1",
-      data: "1º de março às 16h",
-      taxa: 0.50,
-      primeiro: 10,
-      segundo: 3,
-      terceiro: 1,
-      limite: 20,
-      imagem: "https://i.postimg.cc/vBDwTGw1/cropped.webp",
-      inscritos: []
-    },
-    {
-      nome: "Brawl Stars Cup NS - Dia 2",
-      data: "2 de março às 16h",
-      taxa: 0.50,
-      primeiro: 10,
-      segundo: 3,
-      terceiro: 1,
-      limite: 20,
-      imagem: "https://i.postimg.cc/vBDwTGw1/cropped.webp",
-      inscritos: []
-    }
-  ];
-
-  torneiosFixos.forEach((torneio, index) => {
-    container.innerHTML += `
-      <div class="torneio">
-        <h3>${torneio.nome}</h3>
-        <img src="${torneio.imagem}" alt="${torneio.nome}">
-        <p>Data: ${torneio.data}</p>
-        <p>Taxa de inscrição: R$ ${torneio.taxa.toFixed(2)}</p>
-        <p>Prêmios: 1º: R$ ${torneio.primeiro}, 2º: R$ ${torneio.segundo}, 3º: R$ ${torneio.terceiro}</p>
-        <p>Vagas disponíveis: ${torneio.limite - (torneio.inscritos ? torneio.inscritos.length : 0)}</p>
-        <input type="text" id="telefone${index}" placeholder="Digite seu número para contato" />
-        <button onclick="inscreverPresencial(${index})">Pago pessoalmente</button>
-      </div>
-    `;
-  });
+  container.innerHTML = `
+    <div class="torneio">
+      <h2>Processo Capinhense - Dia 1 e Dia 2</h2>
+      <p>Data:</p>
+      <ul>
+        <li>1º de março às 16h</li>
+        <li>2 de março às 16h</li>
+      </ul>
+      <p>Taxa: R$ 0,50</p>
+      <input type="text" id="telefoneTorneio" placeholder="Digite seu número após o Pix" />
+      <button onclick="inscrever()">Inscrever-se</button>
+    </div>
+  `;
 }
 
-// Inscrição presencial
-function inscreverPresencial(index){
+// Função de inscrição simples
+function inscrever(){
   if(!usuarioLogado){
     alert("Faça login primeiro!");
     return;
   }
-  const telefone = document.getElementById(`telefone${index}`).value;
+  const telefone = document.getElementById('telefoneTorneio').value;
   if(!telefone){
     alert("Digite seu número!");
     return;
   }
-  alert(`Inscrição presencial enviada! Número para contato: ${telefone}\nAguarde aprovação.`);
+  alert(`Inscrição enviada! Número para contato: ${telefone}\nAguarde confirmação.`);
 }
 </script>
 
