@@ -9,29 +9,22 @@
   h1, h2, h3 { color: #00ffcc; }
   input { display: block; margin: 10px 0; padding: 8px; width: 100%; border-radius: 5px; border: 1px solid #00ffcc; background: #111; color: #00ffcc; }
   button { background: #00ffcc; border: none; padding: 10px 20px; margin: 5px 0; cursor: pointer; border-radius: 5px; color: #000; font-weight: bold; width: 100%; }
-  button:active { transform: scale(0.95); }
   .torneio { border: 2px solid #00ffcc; padding: 15px; margin: 10px 0; border-radius: 10px; }
   img { max-width: 100%; border-radius: 10px; }
 </style>
 </head>
 <body>
 
-<h1>Nexo Studios - Login / Criar Conta</h1>
+<h1>Nexo Studios - Torneios</h1>
 
-<div id="authContainer">
-  <button onclick="mostrarCriarConta()">Criar Conta</button>
-  <button onclick="mostrarLogin()">Entrar</button>
-</div>
-
-<div id="formContainer"></div>
 <div id="torneiosContainer"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-import { getFirestore, setDoc, doc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getFirestore, collection, doc, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
-// Firebase Config
+// Config Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyDj5-aBr2n_wg80HswcaIOjetm7DtxILSI",
   authDomain: "nexostudios-site-e9458.firebaseapp.com",
@@ -52,108 +45,83 @@ let usuarioLogado = null;
 onAuthStateChanged(auth, (user) => {
   if(user){
     usuarioLogado = user;
-    document.getElementById('authContainer').style.display = "none";
-    document.getElementById('formContainer').innerHTML = "";
-    mostrarTorneio();
+    carregarTorneios();
+  } else {
+    document.getElementById('torneiosContainer').innerHTML = "<p>Faça login para ver os torneios.</p>";
   }
 });
 
-// Mostrar criar conta
-function mostrarCriarConta(){
-  document.getElementById('formContainer').innerHTML = `
-    <h2>Criar Conta</h2>
-    <input type="text" id="nome" placeholder="Nome completo" required>
-    <input type="text" id="username" placeholder="Username" required>
-    <input type="email" id="email" placeholder="E-mail" required>
-    <input type="password" id="senha" placeholder="Senha" required>
-    <input type="password" id="senhaConfirm" placeholder="Confirmar senha" required>
-    <input type="text" id="telefone" placeholder="Telefone" required>
-    <button onclick="criarConta()">Criar Conta</button>
-  `;
-}
-
-// Mostrar login
-function mostrarLogin(){
-  document.getElementById('formContainer').innerHTML = `
-    <h2>Entrar</h2>
-    <input type="email" id="loginEmail" placeholder="E-mail" required>
-    <input type="password" id="loginSenha" placeholder="Senha" required>
-    <button onclick="login()">Entrar</button>
-  `;
-}
-
-// Criar conta
-async function criarConta(){
-  const nome = document.getElementById('nome').value;
-  const username = document.getElementById('username').value;
-  const email = document.getElementById('email').value;
-  const senha = document.getElementById('senha').value;
-  const senhaConfirm = document.getElementById('senhaConfirm').value;
-  const telefone = document.getElementById('telefone').value;
-
-  if(senha !== senhaConfirm){
-    alert("As senhas não coincidem!");
-    return;
-  }
-
-  try{
-    const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
-    await updateProfile(userCredential.user, { displayName: username });
-
-    await setDoc(doc(db, "usuarios", userCredential.user.uid), {
-      nome, username, email, telefone, aprovado: false
-    });
-
-    alert("Conta criada com sucesso!");
-  }catch(e){
-    alert("Erro ao criar conta: " + e.message);
-  }
-}
-
-// Login
-async function login(){
-  const email = document.getElementById('loginEmail').value;
-  const senha = document.getElementById('loginSenha').value;
-
-  try{
-    await signInWithEmailAndPassword(auth, email, senha);
-    alert("Login realizado!");
-  }catch(e){
-    alert("Erro ao logar: " + e.message);
-  }
-}
-
-// Mostrar torneio Dia 1 e 2 juntos
-function mostrarTorneio(){
+// Carregar torneios
+async function carregarTorneios(){
   const container = document.getElementById('torneiosContainer');
   container.innerHTML = `
     <div class="torneio">
-      <h2>Processo Capinhense - Dia 1 e Dia 2</h2>
-      <p>Data:</p>
-      <ul>
-        <li>1º de março às 16h</li>
-        <li>2 de março às 16h</li>
-      </ul>
-      <p>Taxa: R$ 0,50</p>
-      <input type="text" id="telefoneTorneio" placeholder="Digite seu número após o Pix" />
-      <button onclick="inscrever()">Inscrever-se</button>
+      <h2>Brawl Stars Cup NS</h2>
+      <img src="https://i.postimg.cc/vBDwTGw1/cropped.webp" alt="Brawl Stars">
+      <p>Data: 1º de março às 16h e 2 de março às 16h</p>
+      <p>Taxa de inscrição: R$ 0,50</p>
+      <p>Prêmios: 1º: R$ 10, 2º: R$ 3, 3º: R$ 1</p>
+      <input type="text" id="telefone0" placeholder="Digite seu número para contato" />
+      <button onclick="inscreverPix()">Pagar via Pix</button>
+      <button onclick="inscreverPresencial()">Pago pessoalmente</button>
     </div>
   `;
 }
 
-// Função de inscrição simples
-function inscrever(){
+// Inscrição via Pix
+async function inscreverPix(){
   if(!usuarioLogado){
     alert("Faça login primeiro!");
     return;
   }
-  const telefone = document.getElementById('telefoneTorneio').value;
+  const telefone = document.getElementById("telefone0").value;
   if(!telefone){
     alert("Digite seu número!");
     return;
   }
-  alert(`Inscrição enviada! Número para contato: ${telefone}\nAguarde confirmação.`);
+
+  const torneioRef = doc(db, "torneios", "BrawlStarsCupNS");
+  const torneioSnap = await getDocs(torneioRef);
+  
+  await updateDoc(torneioRef, {
+    inscritos: [...(torneioSnap.data().inscritos || []), {
+      nome: usuarioLogado.displayName || "Nome",
+      email: usuarioLogado.email,
+      telefone,
+      aprovado: false,
+      metodo: "Pix"
+    }]
+  });
+  alert("Inscrição via Pix enviada! Aguarde confirmação.");
 }
+
+// Inscrição presencial
+async function inscreverPresencial(){
+  if(!usuarioLogado){
+    alert("Faça login primeiro!");
+    return;
+  }
+  const telefone = document.getElementById("telefone0").value;
+  if(!telefone){
+    alert("Digite seu número!");
+    return;
+  }
+
+  const torneioRef = doc(db, "torneios", "BrawlStarsCupNS");
+  const torneioSnap = await getDocs(torneioRef);
+  
+  await updateDoc(torneioRef, {
+    inscritos: [...(torneioSnap.data().inscritos || []), {
+      nome: usuarioLogado.displayName || "Nome",
+      email: usuarioLogado.email,
+      telefone,
+      aprovado: false,
+      metodo: "Presencial"
+    }]
+  });
+  alert("Inscrição presencial enviada! Aguarde aprovação.");
+}
+
 </script>
 
 </body>
