@@ -3,224 +3,178 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Torneio Brawl Stars - Nexo Studios</title>
+<title>NEXO Studio - Torneios</title>
+<script type="module">
+  // Firebase SDKs
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  // Sua configuração do Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyDj5-aBr2n_wg80HswcaIOjetm7DtxILSI",
+    authDomain: "nexostudios-site-e9458.firebaseapp.com",
+    databaseURL: "https://nexostudios-site-e9458-default-rtdb.firebaseio.com",
+    projectId: "nexostudios-site-e9458",
+    storageBucket: "nexostudios-site-e9458.firebasestorage.app",
+    messagingSenderId: "247851109985",
+    appId: "1:247851109985:web:1b8903891240c55a376420"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Variáveis globais
+  let usuarioLogado = null;
+
+  // Função criar usuário
+  window.criarUsuario = async () => {
+    const nome = document.getElementById("nome").value;
+    const username = document.getElementById("username").value;
+    const email = document.getElementById("email").value;
+    const senha = document.getElementById("senha").value;
+    const repetirSenha = document.getElementById("repetirSenha").value;
+    const telefone = document.getElementById("telefone").value;
+
+    if (!nome || !username || !email || !senha || !repetirSenha || !telefone) {
+      alert("Preencha todos os campos!");
+      return;
+    }
+    if (senha !== repetirSenha) {
+      alert("Senhas não conferem!");
+      return;
+    }
+
+    try {
+      const docRef = await addDoc(collection(db, "usuarios"), {
+        nome,
+        username,
+        email,
+        senha,
+        telefone,
+        cashback: 0,
+        contato: false,
+        aprovado: false
+      });
+      alert("Conta criada com sucesso!");
+      document.getElementById("formRegistro").reset();
+    } catch (e) {
+      alert("Erro ao criar conta: " + e);
+    }
+  };
+
+  // Função login
+  window.loginUsuario = async () => {
+    const email = document.getElementById("loginEmail").value;
+    const senha = document.getElementById("loginSenha").value;
+
+    const querySnapshot = await getDocs(collection(db, "usuarios"));
+    let usuarioEncontrado = null;
+    querySnapshot.forEach((docu) => {
+      const data = docu.data();
+      if (data.email === email && data.senha === senha) {
+        usuarioEncontrado = { id: docu.id, ...data };
+      }
+    });
+
+    if (!usuarioEncontrado) {
+      alert("Email ou senha incorretos!");
+      return;
+    }
+
+    usuarioLogado = usuarioEncontrado;
+    document.getElementById("loginContainer").style.display = "none";
+    document.getElementById("torneiosContainer").style.display = "block";
+    carregarTorneios();
+  };
+
+  // Função carregar torneios
+  async function carregarTorneios() {
+    const torneiosRef = collection(db, "torneios");
+    const snapshot = await getDocs(torneiosRef);
+    const container = document.getElementById("listaTorneios");
+    container.innerHTML = "";
+
+    snapshot.forEach((torneio) => {
+      const data = torneio.data();
+      const card = document.createElement("div");
+      card.className = "torneioCard";
+
+      card.innerHTML = `
+        <img src="${data.imagem}" alt="${data.nome}" class="torneioImagem">
+        <h2>${data.nome}</h2>
+        <p>Data de inscrição: ${data.dataInscricao}</p>
+        <p>Data de início: ${data.dataInicio}</p>
+        <p>Taxa: R$ ${data.taxa.toFixed(2)}</p>
+        <p>Prêmios: 1º R$ ${data.premio1}, 2º R$ ${data.premio2}, 3º R$ ${data.premio3}</p>
+        <p>Vagas disponíveis: ${data.vagasDisponiveis}</p>
+        <button onclick="inscreverTorneio('${torneio.id}', 'pix')">Pagar via Pix</button>
+        <button onclick="inscreverTorneio('${torneio.id}', 'presencial')">Pago pessoalmente</button>
+      `;
+      container.appendChild(card);
+    });
+  }
+
+  // Função inscrição
+  window.inscreverTorneio = async (torneioId, metodoPagamento) => {
+    if (!usuarioLogado) {
+      alert("Você precisa estar logado!");
+      return;
+    }
+
+    const torneioDoc = doc(db, "torneios", torneioId);
+    const inscritosRef = collection(torneioDoc, "inscritos");
+
+    try {
+      await addDoc(inscritosRef, {
+        usuarioId: usuarioLogado.id,
+        nome: usuarioLogado.nome,
+        username: usuarioLogado.username,
+        email: usuarioLogado.email,
+        telefone: usuarioLogado.telefone,
+        metodoPagamento,
+        aprovado: false
+      });
+
+      alert(`Inscrição feita com sucesso! Aguarde aprovação.`);
+    } catch (e) {
+      alert("Erro na inscrição: " + e);
+    }
+  };
+</script>
 
 <style>
-body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-  color:white;
-  text-align:center;
-}
-
-.container{
-  padding:20px;
-}
-
-input, button{
-  padding:12px;
-  margin:8px 0;
-  border-radius:8px;
-  border:none;
-  font-size:16px;
-  width:90%;
-  max-width:300px;
-}
-
-button{
-  background:#00c6ff;
-  color:white;
-  cursor:pointer;
-}
-
-button:hover{
-  opacity:0.9;
-}
-
-.card{
-  background:rgba(255,255,255,0.1);
-  padding:15px;
-  border-radius:12px;
-  margin:15px auto;
-  max-width:400px;
-}
-
-img{
-  width:100%;
-  border-radius:10px;
-}
-
-#telaParabens{
-  display:none;
-  position:fixed;
-  top:0;left:0;
-  width:100%;height:100%;
-  background:black;
-  align-items:center;
-  justify-content:center;
-  flex-direction:column;
-  z-index:9999;
-}
-
-canvas{
-  position:absolute;
-  top:0;
-  left:0;
-}
+  body { font-family: Arial, sans-serif; background: #0a0f20; color: #fff; margin:0; padding:0;}
+  h1, h2 { color: #00f0ff; }
+  input, button { padding: 10px; margin: 5px 0; width: 100%; }
+  button { cursor: pointer; background: #0ff; color: #000; border:none; font-weight: bold; }
+  .torneioCard { background: #001122; margin:10px; padding:10px; border: 2px solid #0ff; border-radius:10px; }
+  .torneioImagem { width:100%; max-height:150px; object-fit:cover; border-radius:5px; }
 </style>
 </head>
 <body>
 
-<div class="container">
+<div id="loginContainer">
+  <h1>Login</h1>
+  <input type="email" id="loginEmail" placeholder="Email">
+  <input type="password" id="loginSenha" placeholder="Senha">
+  <button onclick="loginUsuario()">Entrar</button>
 
-<h2>🏆 Torneio de Brawl Stars</h2>
-
-<!-- LOGIN -->
-<div id="login">
-<input type="text" id="telefone" placeholder="Digite seu número com DDD">
-<br>
-<button onclick="fazerLogin()">Entrar</button>
+  <h2>Ou criar nova conta</h2>
+  <form id="formRegistro" onsubmit="event.preventDefault(); criarUsuario();">
+    <input type="text" id="nome" placeholder="Nome completo">
+    <input type="text" id="username" placeholder="Username">
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="senha" placeholder="Senha">
+    <input type="password" id="repetirSenha" placeholder="Repetir senha">
+    <input type="text" id="telefone" placeholder="Telefone">
+    <button type="submit">Criar conta</button>
+  </form>
 </div>
 
-<!-- TORNEIO -->
-<div id="torneio" style="display:none;">
-<div class="card">
-
-<img src="https://i.postimg.cc/vBDwTGw1/cropped.webp">
-
-<h3>Torneio Oficial</h3>
-<p><b>Data:</b> 1º de Março às 16:00</p>
-<p><b>Taxa:</b> R$ 5,00</p>
-<p><b>Vagas:</b> <span id="vagas">Carregando...</span></p>
-
-<button onclick="pagarPix()">Pagar via Pix</button>
-<button onclick="pagarPessoal()">Pago pessoalmente</button>
-
+<div id="torneiosContainer" style="display:none;">
+  <h1>Torneios Disponíveis</h1>
+  <div id="listaTorneios"></div>
 </div>
-</div>
-
-</div>
-
-<!-- TELA PARABÉNS -->
-<div id="telaParabens">
-<h1>🎉 PARABÉNS! 🎉</h1>
-<p>Você foi aprovado no torneio!</p>
-<button onclick="voltarInicio()">Voltar ao início</button>
-<canvas id="confete"></canvas>
-</div>
-
-<!-- FIREBASE -->
-<script type="module">
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-// 🔥 COLE SUA CONFIG AQUI
-const firebaseConfig = {
-  apiKey: "AIzaSyDj5-aBr2n_wg80HswcaIOjetm7DtxILSI",
-  authDomain: "nexostudios-site-e9458.firebaseapp.com",
-  databaseURL: "https://nexostudios-site-e9458-default-rtdb.firebaseio.com",
-  projectId: "nexostudios-site-e9458",
-  storageBucket: "nexostudios-site-e9458.firebasestorage.app",
-  messagingSenderId: "247851109985",
-  appId: "1:247851109985:web:1b8903891240c55a376420"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-let telefoneAtual = "";
-let vagasRestantes = 20;
-
-// LOGIN
-window.fazerLogin = async function(){
-  telefoneAtual = document.getElementById("telefone").value;
-
-  if(telefoneAtual.length < 10){
-    alert("Digite número válido");
-    return;
-  }
-
-  document.getElementById("login").style.display="none";
-  document.getElementById("torneio").style.display="block";
-
-  document.getElementById("vagas").innerText = vagasRestantes;
-}
-
-// PIX
-window.pagarPix = async function(){
-  await salvarInscricao("Pix");
-}
-
-// PESSOAL
-window.pagarPessoal = async function(){
-  await salvarInscricao("Pessoalmente");
-}
-
-async function salvarInscricao(tipo){
-  if(vagasRestantes <= 0){
-    alert("Sem vagas!");
-    return;
-  }
-
-  await setDoc(doc(db,"inscricoes",telefoneAtual),{
-    telefone: telefoneAtual,
-    pagamento: tipo,
-    aprovado: true,
-    data: new Date()
-  });
-
-  vagasRestantes--;
-  document.getElementById("vagas").innerText = vagasRestantes;
-
-  mostrarParabens();
-}
-
-// PARABÉNS
-window.mostrarParabens = function(){
-  document.getElementById("telaParabens").style.display="flex";
-  iniciarConfete();
-}
-
-window.voltarInicio = function(){
-  window.location.href="https://sites.google.com/view/nexostudios/in%C3%ADcio";
-}
-
-// CONFETE
-function iniciarConfete(){
-  const canvas = document.getElementById("confete");
-  const ctx = canvas.getContext("2d");
-
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-
-  let confetes=[];
-
-  for(let i=0;i<100;i++){
-    confetes.push({
-      x:Math.random()*canvas.width,
-      y:Math.random()*canvas.height,
-      r:Math.random()*6+4
-    });
-  }
-
-  function desenhar(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle="white";
-    for(let c of confetes){
-      ctx.beginPath();
-      ctx.arc(c.x,c.y,c.r,0,Math.PI*2);
-      ctx.fill();
-      c.y+=3;
-      if(c.y>canvas.height) c.y=0;
-    }
-  }
-
-  setInterval(desenhar,20);
-}
-
-</script>
 
 </body>
 </html>
