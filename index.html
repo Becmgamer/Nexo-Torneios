@@ -3,13 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nexo Studios - Login / Torneios</title>
+<title>Nexo Studios - Login e Torneios</title>
 <style>
   body { background: #0a0a1f; color: #00ffcc; font-family: Arial, sans-serif; padding: 20px; }
   h1, h2, h3 { color: #00ffcc; }
   input { display: block; margin: 10px 0; padding: 8px; width: 100%; border-radius: 5px; border: 1px solid #00ffcc; background: #111; color: #00ffcc; }
   button { background: #00ffcc; border: none; padding: 10px 20px; margin: 5px 0; cursor: pointer; border-radius: 5px; color: #000; font-weight: bold; width: 100%; }
-  button:active { transform: scale(0.95); }
   .torneio { border: 2px solid #00ffcc; padding: 15px; margin: 10px 0; border-radius: 10px; }
   img { max-width: 100%; border-radius: 10px; }
 </style>
@@ -19,20 +18,19 @@
 <h1>Nexo Studios - Login / Criar Conta</h1>
 
 <div id="authContainer">
-  <button onclick="mostrarCriarConta()">Criar Conta</button>
-  <button onclick="mostrarLogin()">Entrar</button>
+  <button id="btnCriarConta">Criar Conta</button>
+  <button id="btnLogin">Entrar</button>
 </div>
 
 <div id="formContainer"></div>
-
 <div id="torneiosContainer"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getFirestore, collection, doc, updateDoc, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getFirestore, collection, doc, updateDoc, getDocs, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
-// Firebase config
+// Config Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyDj5-aBr2n_wg80HswcaIOjetm7DtxILSI",
   authDomain: "nexostudios-site-e9458.firebaseapp.com",
@@ -49,6 +47,10 @@ const auth = getAuth(app);
 
 let usuarioLogado = null;
 
+// Event listeners para os botões funcionarem
+document.getElementById('btnCriarConta').addEventListener('click', mostrarCriarConta);
+document.getElementById('btnLogin').addEventListener('click', mostrarLogin);
+
 // Detecta login
 onAuthStateChanged(auth, (user) => {
   if(user){
@@ -61,7 +63,7 @@ onAuthStateChanged(auth, (user) => {
 
 // Mostrar criar conta
 function mostrarCriarConta(){
-  document.getElementById('formContainer').innerHTML = `
+  const form = `
     <h2>Criar Conta</h2>
     <input type="text" id="nome" placeholder="Nome completo" required>
     <input type="text" id="username" placeholder="Username" required>
@@ -69,18 +71,22 @@ function mostrarCriarConta(){
     <input type="password" id="senha" placeholder="Senha" required>
     <input type="password" id="senhaConfirm" placeholder="Confirmar senha" required>
     <input type="text" id="telefone" placeholder="Telefone" required>
-    <button onclick="criarConta()">Criar Conta</button>
+    <button id="btnCriar">Criar Conta</button>
   `;
+  document.getElementById('formContainer').innerHTML = form;
+  document.getElementById('btnCriar').addEventListener('click', criarConta);
 }
 
 // Mostrar login
 function mostrarLogin(){
-  document.getElementById('formContainer').innerHTML = `
+  const form = `
     <h2>Entrar</h2>
     <input type="email" id="loginEmail" placeholder="E-mail" required>
     <input type="password" id="loginSenha" placeholder="Senha" required>
-    <button onclick="login()">Entrar</button>
+    <button id="btnEntrar">Entrar</button>
   `;
+  document.getElementById('formContainer').innerHTML = form;
+  document.getElementById('btnEntrar').addEventListener('click', login);
 }
 
 // Criar conta
@@ -138,46 +144,15 @@ async function carregarTorneios(){
     container.innerHTML += `
       <div class="torneio">
         <h3>${torneio.nome}</h3>
-        ${torneio.imagem ? `<img src="${torneio.imagem}" alt="${torneio.nome}">` : ""}
         <p>Data: ${torneio.data}</p>
         <p>Taxa de inscrição: R$ ${torneio.taxa}</p>
         <p>Prêmios: 1º: R$ ${torneio.primeiro}, 2º: R$ ${torneio.segundo}, 3º: R$ ${torneio.terceiro}</p>
         <p>Vagas disponíveis: ${torneio.limite - (torneio.inscritos ? torneio.inscritos.length : 0)}</p>
         <input type="text" id="telefone${index}" placeholder="Digite seu número para contato" />
-        <button onclick="inscreverPix(${index}, '${docT.id}')">Pagar via Pix</button>
-        <button onclick="inscreverPresencial(${index}, '${docT.id}')">Pago presencial</button>
+        <button onclick="inscreverPresencial(${index}, '${docT.id}')">Pago pessoalmente</button>
       </div>
     `;
   });
-}
-
-// Inscrição via Pix
-async function inscreverPix(index, torneioId){
-  if(!usuarioLogado){
-    alert("Faça login primeiro!");
-    return;
-  }
-  const telefone = document.getElementById(`telefone${index}`).value;
-  if(!telefone){
-    alert("Digite seu número para contato!");
-    return;
-  }
-
-  const torneioRef = doc(db, "torneios", torneioId);
-  const torneioSnap = await getDocs(torneioRef);
-
-  await updateDoc(torneioRef, {
-    inscritos: [...(torneioSnap.data().inscritos || []), {
-      nome: usuarioLogado.displayName || "Nome",
-      email: usuarioLogado.email,
-      username: usuarioLogado.displayName || "Username",
-      telefone,
-      aprovado: false,
-      metodo: "Pix"
-    }]
-  });
-
-  alert("Inscrição via Pix enviada! Aguarde confirmação.");
 }
 
 // Inscrição presencial
@@ -188,13 +163,13 @@ async function inscreverPresencial(index, torneioId){
   }
   const telefone = document.getElementById(`telefone${index}`).value;
   if(!telefone){
-    alert("Digite seu número para contato!");
+    alert("Digite seu número!");
     return;
   }
 
   const torneioRef = doc(db, "torneios", torneioId);
-  const torneioSnap = await getDocs(torneioRef);
-
+  const torneioSnap = await getDoc(torneioRef);
+  
   await updateDoc(torneioRef, {
     inscritos: [...(torneioSnap.data().inscritos || []), {
       nome: usuarioLogado.displayName || "Nome",
@@ -205,9 +180,10 @@ async function inscreverPresencial(index, torneioId){
       metodo: "Presencial"
     }]
   });
-
-  alert("Inscrição presencial enviada! Aguarde confirmação.");
+  alert("Inscrição enviada! Aguarde aprovação.");
 }
+
 </script>
+
 </body>
 </html>
