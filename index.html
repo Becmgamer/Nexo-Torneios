@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nexo Studios NSXO - Torneios</title>
+<title>Nexo Studios Nexo - Torneios</title>
 <style>
   body { background: #0a0a1f; color: #00ffcc; font-family: Arial, sans-serif; padding: 20px; }
   h1, h2, h3 { color: #00ffcc; }
@@ -13,11 +13,12 @@
   .torneio { border: 2px solid #00ffcc; padding: 15px; margin: 10px 0; border-radius: 10px; }
   img { max-width: 100%; border-radius: 10px; }
   #qrContainer { display: none; margin-top: 10px; }
+  .mensagem { color: #00ffcc; margin-top: 10px; }
 </style>
 </head>
 <body>
 
-<h1>Nexo Studios NSXO - Torneios</h1>
+<h1>Nexo Studios Nexo - Torneios</h1>
 
 <div id="authContainer">
   <button onclick="mostrarCriarConta()">Criar Conta</button>
@@ -35,10 +36,9 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getFirestore, collection, doc, updateDoc, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
-// Config Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyDj5-aBr2n_wg80HswcaIOjetm7DtxILSI",
   authDomain: "nexostudios-site-e9458.firebaseapp.com",
@@ -105,9 +105,7 @@ async function criarConta(){
   try{
     const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
     await updateProfile(userCredential.user, { displayName: username });
-    await setDoc(doc(db, "usuarios", userCredential.user.uid), {
-      nome, username, email, telefone, aprovado: false
-    });
+    await setDoc(doc(db, "usuarios", userCredential.user.uid), { nome, username, email, telefone, aprovado: false });
     alert("Conta criada com sucesso!");
   }catch(e){
     alert("Erro ao criar conta: " + e.message);
@@ -127,35 +125,39 @@ async function login(){
 }
 
 // Carregar torneios
-async function carregarTorneios(){
+function carregarTorneios(){
   const container = document.getElementById('torneiosContainer');
-  container.innerHTML = "<h2>Torneio Disponível</h2>";
-
-  // Como exemplo, vamos criar 1 torneio fixo com imagem que funciona
-  const torneio = {
-    nome: "Brawl Stars Cup NS",
-    data: "1º e 2º de março às 16h",
-    taxa: "0,50",
-    primeiro: "R$5",
-    segundo: "R$3",
-    terceiro: "R$2",
-    limite: 50,
-    inscritos: [],
-    imagem: "https://i.postimg.cc/vBDwTGw1/cropped.webp"
-  };
+  container.innerHTML = "<h2>NEXO Torneios</h2>";
 
   container.innerHTML += `
     <div class="torneio">
-      <h3>${torneio.nome}</h3>
-      <img src="${torneio.imagem}" alt="${torneio.nome}">
-      <p>Data: ${torneio.data}</p>
-      <p>Taxa de inscrição: R$ ${torneio.taxa}</p>
-      <p>Prêmios: 1º: ${torneio.primeiro}, 2º: ${torneio.segundo}, 3º: ${torneio.terceiro}</p>
+      <h3>Brawl Stars Cup NS</h3>
+      <img src="https://i.postimg.cc/vBDwTGw1/cropped.webp" alt="Brawl Stars Cup NS">
+      <p>Data: 1º e 2º de março às 16h</p>
+      <p>Taxa de inscrição: R$ 0,50</p>
+      <p>Prêmios: 1º: R$10, 2º: R$3, 3º: R$1</p>
       <input type="text" id="telefone0" placeholder="Digite seu número para contato">
-      <button onclick="mostrarPix()">Pagar via Pix</button>
-      <button onclick="inscreverPresencial('0')">Pago pessoalmente</button>
+      <button onclick="enviarNumero()">Enviar Número</button>
+      <div id="pagamentoButtons" style="display:none;">
+        <button onclick="mostrarPix()">Pagar via Pix</button>
+        <button onclick="inscreverPresencial()">Pago pessoalmente</button>
+      </div>
+      <p id="mensagemEnvio" class="mensagem"></p>
     </div>
   `;
+}
+
+// Enviar número
+function enviarNumero(){
+  const telefone = document.getElementById("telefone0").value;
+  if(!telefone){
+    alert("Digite seu número primeiro!");
+    return;
+  }
+  const msg = document.getElementById("mensagemEnvio");
+  msg.textContent = "Número enviado com sucesso, obrigado!";
+  document.getElementById("pagamentoButtons").style.display = "block";
+  setTimeout(() => { msg.textContent = ""; }, 2000);
 }
 
 // Mostrar Pix
@@ -166,7 +168,7 @@ function mostrarPix(){
 // Copiar Pix
 function copiarPix(){
   const input = document.createElement('input');
-  input.value = "00020126380014BR.GOV.BCB.PIX0114pix@example.com5204000053039865404500";
+  input.value = "Bernardmachado14@gmail.com";
   document.body.appendChild(input);
   input.select();
   document.execCommand('copy');
@@ -175,19 +177,10 @@ function copiarPix(){
 }
 
 // Inscrição presencial
-function inscreverPresencial(index){
-  if(!usuarioLogado){
-    alert("Faça login primeiro!");
-    return;
-  }
-  const telefone = document.getElementById(`telefone${index}`).value;
-  if(!telefone){
-    alert("Digite seu número!");
-    return;
-  }
+function inscreverPresencial(){
   const msg = document.createElement('p');
   msg.textContent = "Você está oficialmente dentro do torneio! Aguarde confirmação em até 24h.";
-  msg.style.color = "#00ffcc";
+  msg.className = "mensagem";
   document.getElementById('torneiosContainer').appendChild(msg);
   setTimeout(() => msg.remove(), 2000);
 }
