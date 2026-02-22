@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Brawl Stars Cup NS - Torneios</title>
+<title>Nexo Studios NSXO - Torneios</title>
 <style>
   body { background: #0a0a1f; color: #00ffcc; font-family: Arial, sans-serif; padding: 20px; }
   h1, h2, h3 { color: #00ffcc; }
@@ -17,7 +17,7 @@
 </head>
 <body>
 
-<h1>Brawl Stars Cup NS</h1>
+<h1>Nexo Studios NSXO - Torneios</h1>
 
 <div id="authContainer">
   <button onclick="mostrarCriarConta()">Criar Conta</button>
@@ -26,6 +26,7 @@
 
 <div id="formContainer"></div>
 <div id="torneiosContainer"></div>
+
 <div id="qrContainer">
   <h3>Pix</h3>
   <img id="qrCodeImg" src="https://i.postimg.cc/qMX1XykM/Screenshot-20260221-125915-Inter.jpg" alt="QR Code Pix">
@@ -54,7 +55,6 @@ const auth = getAuth(app);
 
 let usuarioLogado = null;
 
-// Detecta login
 onAuthStateChanged(auth, (user) => {
   if(user){
     usuarioLogado = user;
@@ -130,28 +130,37 @@ async function login(){
 async function carregarTorneios(){
   const container = document.getElementById('torneiosContainer');
   container.innerHTML = "<h2>Torneio Disponível</h2>";
-  const torneiosSnapshot = await getDocs(collection(db, "torneios"));
-  torneiosSnapshot.forEach((docT, index) => {
-    const torneio = docT.data();
-    container.innerHTML += `
-      <div class="torneio">
-        <h3>${torneio.nome}</h3>
-        <img src="${torneio.imagem}" alt="${torneio.nome}">
-        <p>Data: ${torneio.data}</p>
-        <p>Taxa de inscrição: R$ ${torneio.taxa}</p>
-        <p>Prêmios: 1º: R$ ${torneio.primeiro}, 2º: R$ ${torneio.segundo}, 3º: R$ ${torneio.terceiro}</p>
-        <input type="text" id="telefone${index}" placeholder="Digite seu número para contato">
-        <button onclick="mostrarPix(${index}, '${docT.id}')">Pagar via Pix</button>
-        <button onclick="inscreverPresencial(${index}, '${docT.id}')">Pago pessoalmente</button>
-      </div>
-    `;
-  });
+
+  // Como exemplo, vamos criar 1 torneio fixo com imagem que funciona
+  const torneio = {
+    nome: "Brawl Stars Cup NS",
+    data: "1º e 2º de março às 16h",
+    taxa: "0,50",
+    primeiro: "R$5",
+    segundo: "R$3",
+    terceiro: "R$2",
+    limite: 50,
+    inscritos: [],
+    imagem: "https://i.postimg.cc/vBDwTGw1/cropped.webp"
+  };
+
+  container.innerHTML += `
+    <div class="torneio">
+      <h3>${torneio.nome}</h3>
+      <img src="${torneio.imagem}" alt="${torneio.nome}">
+      <p>Data: ${torneio.data}</p>
+      <p>Taxa de inscrição: R$ ${torneio.taxa}</p>
+      <p>Prêmios: 1º: ${torneio.primeiro}, 2º: ${torneio.segundo}, 3º: ${torneio.terceiro}</p>
+      <input type="text" id="telefone0" placeholder="Digite seu número para contato">
+      <button onclick="mostrarPix()">Pagar via Pix</button>
+      <button onclick="inscreverPresencial('0')">Pago pessoalmente</button>
+    </div>
+  `;
 }
 
 // Mostrar Pix
-function mostrarPix(index, torneioId){
+function mostrarPix(){
   document.getElementById('qrContainer').style.display = "block";
-  // Pode adicionar lógica de inscrição automática via Pix aqui
 }
 
 // Copiar Pix
@@ -166,7 +175,7 @@ function copiarPix(){
 }
 
 // Inscrição presencial
-async function inscreverPresencial(index, torneioId){
+function inscreverPresencial(index){
   if(!usuarioLogado){
     alert("Faça login primeiro!");
     return;
@@ -176,25 +185,12 @@ async function inscreverPresencial(index, torneioId){
     alert("Digite seu número!");
     return;
   }
-  const torneioRef = doc(db, "torneios", torneioId);
-  const torneioSnap = await getDocs(torneioRef);
-  await updateDoc(torneioRef, {
-    inscritos: [...(torneioSnap.data().inscritos || []), {
-      nome: usuarioLogado.displayName || "Nome",
-      email: usuarioLogado.email,
-      username: usuarioLogado.displayName || "Username",
-      telefone,
-      aprovado: false,
-      metodo: "Presencial"
-    }]
-  });
   const msg = document.createElement('p');
-  msg.textContent = "Você está oficialmente dentro do torneio! Aguarde confirmação.";
+  msg.textContent = "Você está oficialmente dentro do torneio! Aguarde confirmação em até 24h.";
   msg.style.color = "#00ffcc";
   document.getElementById('torneiosContainer').appendChild(msg);
   setTimeout(() => msg.remove(), 2000);
 }
 </script>
-
 </body>
 </html>
