@@ -3,26 +3,32 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nexo Studios - Torneios</title>
+<title>Nexo Studios - Login e Torneios</title>
 <style>
-  body { background: #0a0a1f; color: #00ffcc; font-family: Arial, sans-serif; margin:0; padding:0;}
-  h1 { text-align:center; margin-top:20px; }
-  .form-container, .torneio { border:2px solid #00ffcc; border-radius:10px; padding:15px; margin:10px auto; max-width:400px; }
-  input { width:100%; padding:8px; margin:5px 0; border-radius:5px; border:1px solid #00ffcc; background:#0a0a1f; color:#00ffcc; }
-  button { background:#00ffcc; border:none; padding:10px 20px; margin:5px; cursor:pointer; border-radius:5px; color:#000; font-weight:bold; transition:0.1s; }
-  button:active { transform:scale(0.95); }
-  img { max-width:100%; border-radius:10px; margin-bottom:10px; }
+  body { background: #0a0a1f; color: #00ffcc; font-family: Arial, sans-serif; padding: 20px; }
+  h1, h2 { color: #00ffcc; }
+  input { display: block; margin: 10px 0; padding: 8px; width: 100%; border-radius: 5px; border: 1px solid #00ffcc; background: #111; color: #00ffcc; }
+  button { background: #00ffcc; border: none; padding: 10px 20px; margin: 5px 0; cursor: pointer; border-radius: 5px; color: #000; font-weight: bold; width: 100%; }
+  .torneio { border: 2px solid #00ffcc; padding: 15px; margin: 10px 0; border-radius: 10px; }
+  img { max-width: 100%; border-radius: 10px; }
 </style>
 </head>
 <body>
 
-<h1>Nexo Studios - Torneios</h1>
-<div id="loginContainer" class="form-container"></div>
+<h1>Nexo Studios - Login / Criar Conta</h1>
+
+<div id="authContainer">
+  <button onclick="mostrarCriarConta()">Criar Conta</button>
+  <button onclick="mostrarLogin()">Entrar</button>
+</div>
+
+<div id="formContainer"></div>
+
 <div id="torneiosContainer"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getFirestore, collection, doc, updateDoc, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
 // Config Firebase
@@ -46,124 +52,134 @@ let usuarioLogado = null;
 onAuthStateChanged(auth, (user) => {
   if(user){
     usuarioLogado = user;
-    document.getElementById("loginContainer").innerHTML = `<p style="text-align:center;">Olá, ${user.displayName || user.email}</p>`;
+    document.getElementById('authContainer').style.display = "none";
+    document.getElementById('formContainer').innerHTML = "";
     carregarTorneios();
-  } else {
-    mostrarLogin();
   }
 });
 
-// Form de login/criar conta
-function mostrarLogin(){
-  document.getElementById("loginContainer").innerHTML = `
-    <h3>Criar Conta</h3>
-    <input type="text" id="nome" placeholder="Nome completo">
-    <input type="text" id="username" placeholder="Username">
-    <input type="email" id="email" placeholder="E-mail">
-    <input type="password" id="senha" placeholder="Senha">
-    <input type="text" id="telefone" placeholder="Número de telefone">
-    <button id="btnCriarConta">Criar Conta</button>
-    <hr>
-    <h3>Login</h3>
-    <input type="email" id="loginEmail" placeholder="E-mail">
-    <input type="password" id="loginSenha" placeholder="Senha">
-    <button id="btnLogin">Entrar</button>
+// Mostrar criar conta
+function mostrarCriarConta(){
+  const form = `
+    <h2>Criar Conta</h2>
+    <input type="text" id="nome" placeholder="Nome completo" required>
+    <input type="text" id="username" placeholder="Username" required>
+    <input type="email" id="email" placeholder="E-mail" required>
+    <input type="password" id="senha" placeholder="Senha" required>
+    <input type="password" id="senhaConfirm" placeholder="Confirmar senha" required>
+    <input type="text" id="telefone" placeholder="Telefone" required>
+    <button onclick="criarConta()">Criar Conta</button>
   `;
+  document.getElementById('formContainer').innerHTML = form;
+}
 
-  document.getElementById("btnCriarConta").onclick = async ()=>{
-    const nome = document.getElementById("nome").value;
-    const username = document.getElementById("username").value;
-    const email = document.getElementById("email").value;
-    const senha = document.getElementById("senha").value;
-    const telefone = document.getElementById("telefone").value;
-    if(!nome || !username || !email || !senha || !telefone){
-      alert("Preencha todos os campos!");
-      return;
-    }
-    try{
-      const cred = await createUserWithEmailAndPassword(auth, email, senha);
-      await updateProfile(cred.user, { displayName: username });
-      usuarioLogado = cred.user;
-      // Cria documento do usuário no Firestore
-      const userRef = doc(db, "usuarios", cred.user.uid);
-      await updateDoc(userRef, { 
-        nome, username, email, telefone, cadastro: new Date().toISOString(), aprovado: false, cashback:0
-      }).catch(async ()=>{
-        // Se não existir, criar
-        await setDoc(userRef, { nome, username, email, telefone, cadastro: new Date().toISOString(), aprovado: false, cashback:0 });
-      });
-      alert("Conta criada com sucesso!");
-    }catch(e){
-      alert("Erro: "+e.message);
-    }
-  };
+// Mostrar login
+function mostrarLogin(){
+  const form = `
+    <h2>Entrar</h2>
+    <input type="email" id="loginEmail" placeholder="E-mail" required>
+    <input type="password" id="loginSenha" placeholder="Senha" required>
+    <button onclick="login()">Entrar</button>
+  `;
+  document.getElementById('formContainer').innerHTML = form;
+}
 
-  document.getElementById("btnLogin").onclick = async ()=>{
-    const email = document.getElementById("loginEmail").value;
-    const senha = document.getElementById("loginSenha").value;
-    try{
-      await signInWithEmailAndPassword(auth, email, senha);
-    }catch(e){
-      alert("Erro no login: "+e.message);
-    }
-  };
+// Criar conta
+async function criarConta(){
+  const nome = document.getElementById('nome').value;
+  const username = document.getElementById('username').value;
+  const email = document.getElementById('email').value;
+  const senha = document.getElementById('senha').value;
+  const senhaConfirm = document.getElementById('senhaConfirm').value;
+  const telefone = document.getElementById('telefone').value;
+
+  if(senha !== senhaConfirm){
+    alert("As senhas não coincidem!");
+    return;
+  }
+
+  try{
+    const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
+    await updateProfile(userCredential.user, { displayName: username });
+    
+    // Salvar dados no Firestore
+    await setDoc(doc(db, "usuarios", userCredential.user.uid), {
+      nome,
+      username,
+      email,
+      telefone,
+      aprovado: false
+    });
+
+    alert("Conta criada com sucesso!");
+  }catch(e){
+    alert("Erro ao criar conta: " + e.message);
+  }
+}
+
+// Login
+async function login(){
+  const email = document.getElementById('loginEmail').value;
+  const senha = document.getElementById('loginSenha').value;
+
+  try{
+    await signInWithEmailAndPassword(auth, email, senha);
+    alert("Login realizado!");
+  }catch(e){
+    alert("Erro ao logar: " + e.message);
+  }
 }
 
 // Carregar torneios
 async function carregarTorneios(){
   const container = document.getElementById('torneiosContainer');
-  container.innerHTML = "";
+  container.innerHTML = "<h2>Torneios Disponíveis</h2>";
   const torneiosSnapshot = await getDocs(collection(db, "torneios"));
-  
-  torneiosSnapshot.forEach((docT, index)=>{
+  torneiosSnapshot.forEach((docT, index) => {
     const torneio = docT.data();
     container.innerHTML += `
       <div class="torneio">
-        <h2>${torneio.nome}</h2>
-        <img src="${torneio.imagem}" alt="${torneio.nome}">
-        <p><strong>Data:</strong> ${torneio.data}</p>
-        <p><strong>Taxa de inscrição:</strong> R$ ${torneio.taxa}</p>
-        <p><strong>Prêmios:</strong> 1º: R$ ${torneio.primeiro}, 2º: R$ ${torneio.segundo}, 3º: R$ ${torneio.terceiro}</p>
-        <p><strong>Vagas disponíveis:</strong> ${torneio.limite - (torneio.inscritos ? torneio.inscritos.length : 0)}</p>
+        <h3>${torneio.nome}</h3>
+        <p>Data: ${torneio.data}</p>
+        <p>Taxa de inscrição: R$ ${torneio.taxa}</p>
+        <p>Prêmios: 1º: R$ ${torneio.primeiro}, 2º: R$ ${torneio.segundo}, 3º: R$ ${torneio.terceiro}</p>
+        <p>Vagas disponíveis: ${torneio.limite - (torneio.inscritos ? torneio.inscritos.length : 0)}</p>
         <input type="text" id="telefone${index}" placeholder="Digite seu número para contato" />
-        <button onclick="inscrever('${docT.id}', ${index}, 'Pix')">Inscrever-se via Pix</button>
-        <button onclick="inscrever('${docT.id}', ${index}, 'Presencial')">Pago pessoalmente</button>
+        <button onclick="inscreverPresencial(${index}, '${docT.id}')">Pago pessoalmente</button>
       </div>
     `;
   });
 }
 
-// Inscrição
-async function inscrever(torneioId, index, metodo){
+// Inscrição presencial
+async function inscreverPresencial(index, torneioId){
   if(!usuarioLogado){
     alert("Faça login primeiro!");
     return;
   }
   const telefone = document.getElementById(`telefone${index}`).value;
   if(!telefone){
-    alert("Digite seu número para contato!");
+    alert("Digite seu número!");
     return;
   }
 
   const torneioRef = doc(db, "torneios", torneioId);
-  const torneioSnap = await getDoc(torneioRef);
-  const inscritos = torneioSnap.data().inscritos || [];
-
+  const torneioSnap = await getDocs(torneioRef);
+  
+  // Atualizar inscritos
   await updateDoc(torneioRef, {
-    inscritos: arrayUnion({
-      nome: usuarioLogado.displayName || "Nome não definido",
+    inscritos: [...(torneioSnap.data().inscritos || []), {
+      nome: usuarioLogado.displayName || "Nome",
       email: usuarioLogado.email,
       username: usuarioLogado.displayName || "Username",
       telefone,
-      aprovado:false,
-      metodo
-    })
+      aprovado: false,
+      metodo: "Presencial"
+    }]
   });
-  
-  alert(`Inscrição via ${metodo} enviada! Aguarde confirmação.`);
-  carregarTorneios();
+  alert("Inscrição enviada! Aguarde aprovação.");
 }
-
 </script>
+
 </body>
 </html>
