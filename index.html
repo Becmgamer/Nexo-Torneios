@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nexo Studios Nexo - Torneios</title>
+<title>Nexo Studios NSXO - Torneios</title>
 <style>
   body { background: #0a0a1f; color: #00ffcc; font-family: Arial, sans-serif; padding: 20px; }
   h1, h2, h3 { color: #00ffcc; }
@@ -18,7 +18,7 @@
 </head>
 <body>
 
-<h1>Nexo Studios Nexo - Torneios</h1>
+<h1>Nexo Studios NSXO - Torneios</h1>
 
 <div id="authContainer">
   <button onclick="mostrarCriarConta()">Criar Conta</button>
@@ -31,7 +31,7 @@
 <div id="qrContainer">
   <h3>Pix</h3>
   <img id="qrCodeImg" src="https://i.postimg.cc/qMX1XykM/Screenshot-20260221-125915-Inter.jpg" alt="QR Code Pix">
-  <button onclick="copiarPix()">Copiar Pix</button>
+  <button id="copiarPixBtn">Copiar Pix</button>
 </div>
 
 <script type="module">
@@ -74,8 +74,9 @@ function mostrarCriarConta(){
     <input type="password" id="senha" placeholder="Senha" required>
     <input type="password" id="senhaConfirm" placeholder="Confirmar senha" required>
     <input type="text" id="telefone" placeholder="Telefone" required>
-    <button onclick="criarConta()">Criar Conta</button>
+    <button id="criarContaBtn">Criar Conta</button>
   `;
+  document.getElementById("criarContaBtn").addEventListener("click", criarConta);
 }
 
 // Mostrar login
@@ -84,8 +85,9 @@ function mostrarLogin(){
     <h2>Entrar</h2>
     <input type="email" id="loginEmail" placeholder="E-mail" required>
     <input type="password" id="loginSenha" placeholder="Senha" required>
-    <button onclick="login()">Entrar</button>
+    <button id="loginBtn">Entrar</button>
   `;
+  document.getElementById("loginBtn").addEventListener("click", login);
 }
 
 // Criar conta
@@ -137,14 +139,19 @@ function carregarTorneios(){
       <p>Taxa de inscrição: R$ 0,50</p>
       <p>Prêmios: 1º: R$10, 2º: R$3, 3º: R$1</p>
       <input type="text" id="telefone0" placeholder="Digite seu número para contato">
-      <button onclick="enviarNumero()">Enviar Número</button>
+      <button id="enviarNumeroBtn">Enviar Número</button>
       <div id="pagamentoButtons" style="display:none;">
-        <button onclick="mostrarPix()">Pagar via Pix</button>
-        <button onclick="inscreverPresencial()">Pago pessoalmente</button>
+        <button id="pixBtn">Pagar via Pix</button>
+        <button id="presencialBtn">Pago pessoalmente</button>
       </div>
       <p id="mensagemEnvio" class="mensagem"></p>
     </div>
   `;
+
+  // Adiciona os event listeners aos botões dinamicamente
+  document.getElementById("enviarNumeroBtn").addEventListener("click", enviarNumero);
+  document.getElementById("pixBtn").addEventListener("click", mostrarPix);
+  document.getElementById("presencialBtn").addEventListener("click", inscreverPresencial);
 }
 
 // Enviar número
@@ -168,13 +175,14 @@ function mostrarPix(){
 // Copiar Pix
 function copiarPix(){
   const input = document.createElement('input');
-  input.value = "Bernardmachado14@gmail.com";
+  input.value = "BernardoMachado14@gmail.com";
   document.body.appendChild(input);
   input.select();
   document.execCommand('copy');
   document.body.removeChild(input);
   alert("Pix copiado!");
 }
+document.getElementById("copiarPixBtn").addEventListener("click", copiarPix);
 
 // Inscrição presencial
 function inscreverPresencial(){
