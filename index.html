@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Nexo Studios - Torneios</title>
 <style>
-  body { background-color: #0a0a1f; color: #00ffcc; font-family: Arial, sans-serif; margin: 0; padding: 0;}
+  body { background-color: #0a0a1f; color: #00ffcc; font-family: Arial, sans-serif; margin: 0; padding: 0; }
   h1 { text-align: center; margin-top: 20px; }
   .torneio { border: 2px solid #00ffcc; border-radius: 10px; margin: 15px; padding: 15px; }
   img { max-width: 100%; border-radius: 10px; }
-  button { background-color: #00ffcc; color: #000; border: none; padding: 10px 20px; margin: 5px; cursor: pointer; border-radius: 5px; font-weight: bold; }
-  button:active { transform: scale(0.95); }
+  button { background-color: #00ffcc; color: #000; border: none; padding: 10px 20px; margin: 5px; cursor: pointer; border-radius: 5px; font-weight: bold; transition: transform 0.1s, box-shadow 0.1s; }
+  button:active { transform: scale(0.95); box-shadow: 0 0 10px #00ffcc; }
   input { padding: 8px; width: calc(100% - 20px); margin: 5px 0; border-radius: 5px; border: 1px solid #00ffcc; background: #0a0a1f; color: #00ffcc; }
 </style>
 </head>
@@ -89,6 +89,7 @@ window.inscrever = async function(torneioId, index, metodo){
   const torneioRef = doc(db, "torneios", torneioId);
   const torneioSnap = await getDocs(torneioRef);
 
+  // Atualiza inscrição
   await updateDoc(torneioRef, {
     inscritos: [...(torneioSnap.data().inscritos || []), {
       nome: usuarioLogado.displayName || "Nome",
@@ -100,6 +101,7 @@ window.inscrever = async function(torneioId, index, metodo){
     }]
   });
 
+  // Feedback visual
   alert(`Inscrição via ${metodo} enviada! Aguarde aprovação.`);
 }
 </script>
