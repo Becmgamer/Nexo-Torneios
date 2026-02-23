@@ -3,195 +3,231 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nexo Studios - Torneios</title>
+<title>Nexo Studios Nexo - Torneios</title>
+
 <style>
-  body { background: #0a0a1f; color: #00ffcc; font-family: Arial, sans-serif; padding: 20px; }
-  h1, h2, h3 { color: #00ffcc; text-align: center; }
-  input { display: block; margin: 10px 0; padding: 8px; width: 100%; border-radius: 5px; border: 1px solid #00ffcc; background: #111; color: #00ffcc; }
-  button { background: #00ffcc; border: none; padding: 10px 20px; margin: 5px 0; cursor: pointer; border-radius: 5px; color: #000; font-weight: bold; width: 100%; }
-  button:active { transform: scale(0.95); }
-  .torneio { border: 2px solid #00ffcc; padding: 15px; margin: 10px 0; border-radius: 10px; }
-  img { max-width: 100%; border-radius: 10px; display: block; margin: 0 auto; }
-  #qrContainer { display: none; margin-top: 10px; text-align: center; }
-  #qrCodeImg { width: 200px; height: 200px; object-fit: contain; margin: 0 auto; display: block; }
-  .mensagem { color: #00ffcc; margin-top: 10px; text-align: center; }
+body {
+  background: #0a0a1f;
+  color: #00ffcc;
+  font-family: Arial, sans-serif;
+  padding: 20px;
+}
+
+h1, h2, h3 {
+  text-align: center;
+}
+
+input {
+  display: block;
+  margin: 10px 0;
+  padding: 8px;
+  width: 100%;
+  border-radius: 5px;
+  border: 1px solid #00ffcc;
+  background: #111;
+  color: #00ffcc;
+}
+
+button {
+  background: #00ffcc;
+  border: none;
+  padding: 10px;
+  margin: 5px 0;
+  cursor: pointer;
+  border-radius: 5px;
+  color: #000;
+  font-weight: bold;
+  width: 100%;
+}
+
+button:hover {
+  opacity: 0.8;
+}
+
+.torneio {
+  border: 2px solid #00ffcc;
+  padding: 15px;
+  margin-top: 20px;
+  border-radius: 10px;
+}
+
+#qrContainer {
+  display: none;
+  text-align: center;
+  margin-top: 15px;
+}
+
+#qrContainer img {
+  width: 200px;
+  display: block;
+  margin: 10px auto;
+}
 </style>
 </head>
 <body>
 
-<h1>Nexo Studios - Torneios</h1>
+<h1>Nexo Studios NSXO - Torneios</h1>
 
-<div id="authContainer">
-  <button onclick="mostrarCriarConta()">Criar Conta</button>
-  <button onclick="mostrarLogin()">Entrar</button>
+<div id="authArea">
+  <button id="btnCriar">Criar Conta</button>
+  <button id="btnEntrar">Entrar</button>
 </div>
 
-<div id="formContainer"></div>
-<div id="torneiosContainer"></div>
+<div id="formArea"></div>
+<div id="torneioArea"></div>
 
 <div id="qrContainer">
-  <h3>Pix</h3>
-  <img id="qrCodeImg" src="https://imgur.com/8A1kaOb" alt="QR Code Pix">
-  <button id="copiarPixBtn">Copiar Pix</button>
+  <h3>Pagamento via Pix</h3>
+  <img src="COLOQUE_AQUI_LINK_DIRETO_DO_QR.png" alt="QR Code Pix">
+  <button id="copiarPix">Copiar Pix</button>
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } 
+from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { getFirestore, doc, setDoc } 
+from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+/* SUAS CONFIGURAÇÕES DO PRINT */
 const firebaseConfig = {
   apiKey: "AIzaSyDj5-aBr2n_wg80HswcaIOjetm7DtxILSI",
   authDomain: "nexostudios-site-e9458.firebaseapp.com",
-  databaseURL: "https://nexostudios-site-e9458-default-rtdb.firebaseio.com",
   projectId: "nexostudios-site-e9458",
-  storageBucket: "nexostudios-site-e9458.firebasestorage.app",
+  storageBucket: "nexostudios-site-e9458.appspot.com",
   messagingSenderId: "247851109985",
   appId: "1:247851109985:web:1b8903891240c55a376420"
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
 const auth = getAuth(app);
+const db = getFirestore(app);
 
-let usuarioLogado = null;
+/* BOTÕES PRINCIPAIS */
+
+document.getElementById("btnCriar").addEventListener("click", () => {
+  document.getElementById("formArea").innerHTML = `
+    <h2>Criar Conta</h2>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="senha" placeholder="Senha">
+    <button id="criarContaBtn">Criar</button>
+  `;
+
+  document.getElementById("criarContaBtn").addEventListener("click", criarConta);
+});
+
+document.getElementById("btnEntrar").addEventListener("click", () => {
+  document.getElementById("formArea").innerHTML = `
+    <h2>Entrar</h2>
+    <input type="email" id="loginEmail" placeholder="Email">
+    <input type="password" id="loginSenha" placeholder="Senha">
+    <button id="loginBtn">Entrar</button>
+  `;
+
+  document.getElementById("loginBtn").addEventListener("click", login);
+});
+
+/* CRIAR CONTA */
+
+async function criarConta() {
+  const email = document.getElementById("email").value;
+  const senha = document.getElementById("senha").value;
+
+  try {
+    const user = await createUserWithEmailAndPassword(auth, email, senha);
+    await setDoc(doc(db, "usuarios", user.user.uid), {
+      email: email,
+      aprovado: false
+    });
+    alert("Conta criada com sucesso!");
+  } catch (error) {
+    alert("Erro: " + error.message);
+  }
+}
+
+/* LOGIN */
+
+async function login() {
+  const email = document.getElementById("loginEmail").value;
+  const senha = document.getElementById("loginSenha").value;
+
+  try {
+    await signInWithEmailAndPassword(auth, email, senha);
+    alert("Login realizado!");
+  } catch (error) {
+    alert("Erro: " + error.message);
+  }
+}
+
+/* QUANDO LOGAR */
 
 onAuthStateChanged(auth, (user) => {
-  if(user){
-    usuarioLogado = user;
-    document.getElementById('authContainer').style.display = "none";
-    document.getElementById('formContainer').innerHTML = "";
-    carregarTorneios();
+  if (user) {
+    document.getElementById("authArea").style.display = "none";
+    document.getElementById("formArea").innerHTML = "";
+    carregarTorneio();
   }
 });
 
-// Mostrar criar conta
-function mostrarCriarConta(){
-  document.getElementById('formContainer').innerHTML = `
-    <h2>Criar Conta</h2>
-    <input type="text" id="nome" placeholder="Nome completo" required>
-    <input type="text" id="username" placeholder="Username" required>
-    <input type="email" id="email" placeholder="E-mail" required>
-    <input type="password" id="senha" placeholder="Senha" required>
-    <input type="password" id="senhaConfirm" placeholder="Confirmar senha" required>
-    <input type="text" id="telefone" placeholder="Telefone" required>
-    <button id="criarContaBtn">Criar Conta</button>
-  `;
-  document.getElementById("criarContaBtn").addEventListener("click", criarConta);
-}
+/* TORNEIO */
 
-// Mostrar login
-function mostrarLogin(){
-  document.getElementById('formContainer').innerHTML = `
-    <h2>Entrar</h2>
-    <input type="email" id="loginEmail" placeholder="E-mail" required>
-    <input type="password" id="loginSenha" placeholder="Senha" required>
-    <button id="loginBtn">Entrar</button>
-  `;
-  document.getElementById("loginBtn").addEventListener("click", login);
-}
-
-// Criar conta
-async function criarConta(){
-  const nome = document.getElementById('nome').value;
-  const username = document.getElementById('username').value;
-  const email = document.getElementById('email').value;
-  const senha = document.getElementById('senha').value;
-  const senhaConfirm = document.getElementById('senhaConfirm').value;
-  const telefone = document.getElementById('telefone').value;
-
-  if(senha !== senhaConfirm){
-    alert("As senhas não coincidem!");
-    return;
-  }
-
-  try{
-    const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
-    await updateProfile(userCredential.user, { displayName: username });
-    await setDoc(doc(db, "usuarios", userCredential.user.uid), { nome, username, email, telefone, aprovado: false });
-    alert("Conta criada com sucesso!");
-  }catch(e){
-    alert("Erro ao criar conta: " + e.message);
-  }
-}
-
-// Login
-async function login(){
-  const email = document.getElementById('loginEmail').value;
-  const senha = document.getElementById('loginSenha').value;
-  try{
-    await signInWithEmailAndPassword(auth, email, senha);
-    alert("Login realizado!");
-  }catch(e){
-    alert("Erro ao logar: " + e.message);
-  }
-}
-
-// Carregar torneios
-function carregarTorneios(){
-  const container = document.getElementById('torneiosContainer');
-  container.innerHTML = "<h2>NEXO Torneios</h2>";
-
-  container.innerHTML += `
+function carregarTorneio() {
+  document.getElementById("torneioArea").innerHTML = `
     <div class="torneio">
       <h3>Brawl Stars Cup NS</h3>
-      <img src="https://i.postimg.cc/vBDwTGw1/cropped.webp" alt="Brawl Stars Cup NS">
       <p>Data: 1º e 2º de março às 16h</p>
-      <p>Taxa de inscrição: R$ 0,50</p>
-      <p>Prêmios: 1º: R$10, 2º: R$3, 3º: R$1</p>
-      <input type="text" id="telefone0" placeholder="Digite seu número para contato">
-      <button id="enviarNumeroBtn">Enviar Número</button>
-      <div id="pagamentoButtons" style="display:none;">
-        <button id="pixBtn">Pagar via Pix</button>
-        <button id="presencialBtn">Pago pessoalmente</button>
+      <p>Taxa: R$ 0,50</p>
+      <p>Prêmios:</p>
+      <p>1º Lugar: R$10</p>
+      <p>2º Lugar: R$3</p>
+      <p>3º Lugar: R$1</p>
+
+      <input type="text" id="numero" placeholder="Digite seu número">
+      <button id="enviarNumero">Enviar Número</button>
+
+      <div id="pagamentoArea" style="display:none;">
+        <button id="btnPix">Pagar via Pix</button>
+        <button id="btnPresencial">Pagar Pessoalmente</button>
       </div>
-      <p id="mensagemEnvio" class="mensagem"></p>
+
+      <p id="mensagem"></p>
     </div>
   `;
 
-  document.getElementById("enviarNumeroBtn").addEventListener("click", enviarNumero);
-  document.getElementById("pixBtn").addEventListener("click", mostrarPix);
-  document.getElementById("presencialBtn").addEventListener("click", inscreverPresencial);
+  document.getElementById("enviarNumero").addEventListener("click", () => {
+    const numero = document.getElementById("numero").value;
+    if (!numero) {
+      alert("Digite seu número primeiro!");
+      return;
+    }
+
+    document.getElementById("mensagem").innerText =
+      "Número enviado com sucesso!";
+    document.getElementById("pagamentoArea").style.display = "block";
+
+    setTimeout(() => {
+      document.getElementById("mensagem").innerText = "";
+    }, 2000);
+  });
+
+  document.getElementById("btnPix").addEventListener("click", () => {
+    document.getElementById("qrContainer").style.display = "block";
+  });
+
+  document.getElementById("btnPresencial").addEventListener("click", () => {
+    alert("OK, aguarde a confirmação dentro de 24 horas.");
+  });
 }
 
-// Enviar número
-function enviarNumero(){
-  const telefone = document.getElementById("telefone0").value;
-  if(!telefone){
-    alert("Digite seu número primeiro!");
-    return;
-  }
-  const msg = document.getElementById("mensagemEnvio");
-  msg.textContent = "Número enviado com sucesso, obrigado!";
-  document.getElementById("pagamentoButtons").style.display = "block";
-  setTimeout(() => { msg.textContent = ""; }, 2000);
-}
+/* COPIAR PIX */
 
-// Mostrar Pix
-function mostrarPix(){
-  document.getElementById('qrContainer').style.display = "block";
-}
-
-// Copiar Pix
-function copiarPix(){
-  const input = document.createElement('input');
-  input.value = "Bernardmachado14@gmail.com";
-  document.body.appendChild(input);
-  input.select();
-  document.execCommand('copy');
-  document.body.removeChild(input);
+document.getElementById("copiarPix").addEventListener("click", () => {
+  navigator.clipboard.writeText("BernardoMachado14@gmail.com");
   alert("Pix copiado!");
-}
-document.getElementById("copiarPixBtn").addEventListener("click", copiarPix);
+});
 
-// Inscrição presencial
-function inscreverPresencial(){
-  const msg = document.createElement('p');
-  msg.textContent = "Você está oficialmente dentro do torneio! Aguarde confirmação em até 24h.";
-  msg.className = "mensagem";
-  document.getElementById('torneiosContainer').appendChild(msg);
-  setTimeout(() => msg.remove(), 2000);
-}
 </script>
+
 </body>
 </html>
