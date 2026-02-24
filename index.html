@@ -110,6 +110,7 @@ button{
 <img src="https://i.postimg.cc/vBDwTGw1/cropped.webp" width="150"><br><br>
 
 <h3>Brawl Stars Cup NS</h3>
+
 <p><b>Data de entrada:</b><br>
 1º de março às 16:00<br>
 (Fase de grupos e eliminatória)</p>
@@ -123,7 +124,7 @@ Será definida de acordo com a possibilidade de participação dos finalistas (2
 
 <div id="pagamentoArea" class="hidden">
 <button class="primary" onclick="pagarPix()">Pagar via Pix</button>
-<button class="secondary">Pagar pessoalmente</button>
+<button class="secondary" onclick="pagarPessoal()">Pagar pessoalmente</button>
 <br><br>
 <button class="secondary" onclick="voltarInicio()">Voltar para aba inicial</button>
 </div>
@@ -214,8 +215,13 @@ window.voltarInicio = function(){
 window.location.href = "https://sites.google.com/view/nexostudios/in%C3%ADcio";
 }
 
-/* ===== ADIÇÃO ===== */
+/* ===== FUNÇÕES ADICIONADAS ===== */
+
 window.pagarPix = function(){
+alert("Chave Pix:\nBernardmachado14@gmail.com");
+}
+
+window.pagarPessoal = function(){
 alert("Mensagem enviada com sucesso.\nAguarde o prazo de até 24 horas para resposta.");
 }
 
