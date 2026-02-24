@@ -19,7 +19,7 @@ header{
   padding:20px;
   font-size:24px;
   font-weight:bold;
-  color:#00ff88; /* Verde neon */
+  color:#00ff88;
 }
 
 .container{
@@ -50,18 +50,18 @@ button{
 }
 
 .primary{
-  background:#00ff88; /* Verde neon */
+  background:#00ff88;
   color:black;
 }
 
 .primary:hover{
-  background:#00ccff; /* Azul neon inglês */
+  background:#00ccff;
   color:white;
   box-shadow:0 0 10px #00ccff;
 }
 
 .secondary{
-  background:#00ccff; /* Azul neon inglês */
+  background:#00ccff;
   color:black;
 }
 
@@ -122,7 +122,7 @@ Será definida de acordo com a possibilidade de participação dos finalistas (2
 <button class="primary" onclick="enviarNumero()" id="btnEnviar">Enviar Número</button>
 
 <div id="pagamentoArea" class="hidden">
-<button class="primary">Pagar via Pix</button>
+<button class="primary" onclick="pagarPix()">Pagar via Pix</button>
 <button class="secondary">Pagar pessoalmente</button>
 <br><br>
 <button class="secondary" onclick="voltarInicio()">Voltar para aba inicial</button>
@@ -151,7 +151,6 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const database = getDatabase(app);
 
-// Criar conta
 window.criarConta = function(){
 const nome = document.getElementById("nome").value;
 const username = document.getElementById("username").value;
@@ -175,7 +174,6 @@ alert(error.message);
 });
 }
 
-// Entrar
 window.entrar = function(){
 const email = document.getElementById("email").value;
 const senha = document.getElementById("senha").value;
@@ -189,7 +187,6 @@ alert(error.message);
 });
 }
 
-// Sessão 30 dias
 onAuthStateChanged(auth, (user)=>{
 if(user){
 const loginTime = localStorage.getItem("loginTime");
@@ -207,19 +204,22 @@ localStorage.removeItem("loginTime");
 }
 });
 
-// Enviar número
 window.enviarNumero = function(){
 document.getElementById("numero").style.display="none";
 document.getElementById("btnEnviar").style.display="none";
 document.getElementById("pagamentoArea").classList.remove("hidden");
 }
 
-// Voltar para site principal
 window.voltarInicio = function(){
 window.location.href = "https://sites.google.com/view/nexostudios/in%C3%ADcio";
+}
+
+/* ===== ADIÇÃO ===== */
+window.pagarPix = function(){
+alert("Mensagem enviada com sucesso.\nAguarde o prazo de até 24 horas para resposta.");
 }
 
 </script>
 
 </body>
-  </html>
+</html>
