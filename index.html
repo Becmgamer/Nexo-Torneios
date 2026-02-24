@@ -3,230 +3,132 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nexo Studios Nexo - Torneios</title>
+<title>Nexo Studios</title>
 
 <style>
 body {
-  background: #0a0a1f;
-  color: #00ffcc;
-  font-family: Arial, sans-serif;
-  padding: 20px;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0f0f0f;
+    color: white;
+    text-align: center;
 }
 
-h1, h2, h3 {
-  text-align: center;
+header {
+    background: #111;
+    padding: 20px;
+    font-size: 26px;
+    font-weight: bold;
+}
+
+.logo {
+    width: 160px;
+    margin: 20px auto;
+}
+
+.card {
+    background: #1c1c1c;
+    padding: 20px;
+    margin: 20px auto;
+    width: 90%;
+    max-width: 400px;
+    border-radius: 12px;
 }
 
 input {
-  display: block;
-  margin: 10px 0;
-  padding: 8px;
-  width: 100%;
-  border-radius: 5px;
-  border: 1px solid #00ffcc;
-  background: #111;
-  color: #00ffcc;
+    width: 90%;
+    padding: 10px;
+    margin: 8px 0;
+    border-radius: 6px;
+    border: none;
 }
 
 button {
-  background: #00ffcc;
-  border: none;
-  padding: 10px;
-  margin: 5px 0;
-  cursor: pointer;
-  border-radius: 5px;
-  color: #000;
-  font-weight: bold;
-  width: 100%;
+    background: #00bfff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 10px;
+    width: 95%;
 }
 
 button:hover {
-  opacity: 0.8;
-}
-
-.torneio {
-  border: 2px solid #00ffcc;
-  padding: 15px;
-  margin-top: 20px;
-  border-radius: 10px;
-}
-
-#qrContainer {
-  display: none;
-  text-align: center;
-  margin-top: 15px;
-}
-
-#qrContainer img {
-  width: 200px;
-  display: block;
-  margin: 10px auto;
+    opacity: 0.8;
 }
 </style>
 </head>
+
 <body>
 
-<h1>Nexo Studios NSXO - Torneios</h1>
+<header id="tituloPagina">Nexo Studios Login</header>
 
-<div id="authArea">
-  <button id="btnCriar">Criar Conta</button>
-  <button id="btnEntrar">Entrar</button>
+<img class="logo" src="https://i.postimg.cc/vBDwTGw1/cropped.webp" alt="Brawl Stars Logo">
+
+<div id="loginArea">
+
+<div class="card">
+<h2>Login</h2>
+<input type="email" id="email" placeholder="Email">
+<input type="password" id="senha" placeholder="Senha">
+<button onclick="login()">Entrar</button>
 </div>
 
-<div id="formArea"></div>
-<div id="torneioArea"></div>
-
-<div id="qrContainer">
-  <h3>Pagamento via Pix</h3>
-  <img src="COLOQUE_AQUI_LINK_DIRETO_DO_QR.png" alt="QR Code Pix">
-  <button id="copiarPix">Copiar Pix</button>
 </div>
 
-<script type="module">
+<div id="cupArea" style="display:none;">
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } 
-from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-import { getFirestore, doc, setDoc } 
-from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+<header>Nexo Studios Cup NS</header>
 
-/* SUAS CONFIGURAÇÕES DO PRINT */
-const firebaseConfig = {
-  apiKey: "AIzaSyDj5-aBr2n_wg80HswcaIOjetm7DtxILSI",
-  authDomain: "nexostudios-site-e9458.firebaseapp.com",
-  projectId: "nexostudios-site-e9458",
-  storageBucket: "nexostudios-site-e9458.appspot.com",
-  messagingSenderId: "247851109985",
-  appId: "1:247851109985:web:1b8903891240c55a376420"
-};
+<div class="card">
+<h3>Brawl Stars Cup NS</h3>
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+<p><strong>Data:</strong> 1º de março às 16 horas</p>
+<p>(Fase de grupos e eliminatória)</p>
 
-/* BOTÕES PRINCIPAIS */
+<p><strong>Final:</strong> Será definido de acordo com a possibilidade de participação dos dois finalistas.</p>
 
-document.getElementById("btnCriar").addEventListener("click", () => {
-  document.getElementById("formArea").innerHTML = `
-    <h2>Criar Conta</h2>
-    <input type="email" id="email" placeholder="Email">
-    <input type="password" id="senha" placeholder="Senha">
-    <button id="criarContaBtn">Criar</button>
-  `;
+<input type="text" id="numero" placeholder="Digite seu número para contato">
+<button onclick="enviarNumero()">Enviar Número</button>
 
-  document.getElementById("criarContaBtn").addEventListener("click", criarConta);
-});
+<div id="pagamentoArea" style="display:none;">
+<button onclick="pagarPix()">Pagar via Pix</button>
+<button onclick="pagarPresencial()">Pagar pessoalmente</button>
+</div>
 
-document.getElementById("btnEntrar").addEventListener("click", () => {
-  document.getElementById("formArea").innerHTML = `
-    <h2>Entrar</h2>
-    <input type="email" id="loginEmail" placeholder="Email">
-    <input type="password" id="loginSenha" placeholder="Senha">
-    <button id="loginBtn">Entrar</button>
-  `;
+<p id="mensagem"></p>
 
-  document.getElementById("loginBtn").addEventListener("click", login);
-});
+</div>
+</div>
 
-/* CRIAR CONTA */
-
-async function criarConta() {
-  const email = document.getElementById("email").value;
-  const senha = document.getElementById("senha").value;
-
-  try {
-    const user = await createUserWithEmailAndPassword(auth, email, senha);
-    await setDoc(doc(db, "usuarios", user.user.uid), {
-      email: email,
-      aprovado: false
-    });
-    alert("Conta criada com sucesso!");
-  } catch (error) {
-    alert("Erro: " + error.message);
-  }
+<script>
+function login() {
+    document.getElementById("loginArea").style.display = "none";
+    document.getElementById("cupArea").style.display = "block";
+    document.getElementById("tituloPagina").innerText = "Nexo Studios Cup NS";
 }
 
-/* LOGIN */
-
-async function login() {
-  const email = document.getElementById("loginEmail").value;
-  const senha = document.getElementById("loginSenha").value;
-
-  try {
-    await signInWithEmailAndPassword(auth, email, senha);
-    alert("Login realizado!");
-  } catch (error) {
-    alert("Erro: " + error.message);
-  }
-}
-
-/* QUANDO LOGAR */
-
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    document.getElementById("authArea").style.display = "none";
-    document.getElementById("formArea").innerHTML = "";
-    carregarTorneio();
-  }
-});
-
-/* TORNEIO */
-
-function carregarTorneio() {
-  document.getElementById("torneioArea").innerHTML = `
-    <div class="torneio">
-      <h3>Brawl Stars Cup NS</h3>
-      <p>Data: 1º e 2º de março às 16h</p>
-      <p>Taxa: R$ 0,50</p>
-      <p>Prêmios:</p>
-      <p>1º Lugar: R$10</p>
-      <p>2º Lugar: R$3</p>
-      <p>3º Lugar: R$1</p>
-
-      <input type="text" id="numero" placeholder="Digite seu número">
-      <button id="enviarNumero">Enviar Número</button>
-
-      <div id="pagamentoArea" style="display:none;">
-        <button id="btnPix">Pagar via Pix</button>
-        <button id="btnPresencial">Pagar Pessoalmente</button>
-      </div>
-
-      <p id="mensagem"></p>
-    </div>
-  `;
-
-  document.getElementById("enviarNumero").addEventListener("click", () => {
-    const numero = document.getElementById("numero").value;
-    if (!numero) {
-      alert("Digite seu número primeiro!");
-      return;
+function enviarNumero() {
+    let numero = document.getElementById("numero").value;
+    if(numero === "") {
+        alert("Digite seu número primeiro.");
+        return;
     }
-
-    document.getElementById("mensagem").innerText =
-      "Número enviado com sucesso!";
+    document.getElementById("mensagem").innerText = "Número enviado com sucesso!";
     document.getElementById("pagamentoArea").style.display = "block";
-
     setTimeout(() => {
-      document.getElementById("mensagem").innerText = "";
+        document.getElementById("mensagem").innerText = "";
     }, 2000);
-  });
-
-  document.getElementById("btnPix").addEventListener("click", () => {
-    document.getElementById("qrContainer").style.display = "block";
-  });
-
-  document.getElementById("btnPresencial").addEventListener("click", () => {
-    alert("OK, aguarde a confirmação dentro de 24 horas.");
-  });
 }
 
-/* COPIAR PIX */
+function pagarPix() {
+    alert("Pix liberado. (QR Code será adicionado depois)");
+}
 
-document.getElementById("copiarPix").addEventListener("click", () => {
-  navigator.clipboard.writeText("BernardoMachado14@gmail.com");
-  alert("Pix copiado!");
-});
-
+function pagarPresencial() {
+    alert("Aguarde confirmação em até 24 horas.");
+}
 </script>
 
 </body>
