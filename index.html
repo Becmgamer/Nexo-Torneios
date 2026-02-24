@@ -14,14 +14,6 @@ body{
   text-align:center;
 }
 
-header{
-  background:#111;
-  padding:20px;
-  font-size:24px;
-  font-weight:bold;
-  color:#00ff88;
-}
-
 .container{
   margin-top:40px;
 }
@@ -88,14 +80,17 @@ button{
 
 <body>
 
-<header id="topo">Nexo Studios Login</header>
+<!-- REMOVI O PRIMEIRO HEADER DAQUI -->
 
 <div class="container" id="loginArea">
+
+<h2>Nexo Studios Login</h2>
 
 <input type="text" id="nome" placeholder="Nome">
 <input type="text" id="username" placeholder="Username">
 <input type="email" id="email" placeholder="Email">
 <input type="password" id="senha" placeholder="Senha">
+<input type="text" id="telefone" placeholder="Telefone">
 
 <button class="primary" onclick="criarConta()">Criar Conta</button>
 <button class="secondary" onclick="entrar()">Entrar</button>
@@ -104,10 +99,10 @@ button{
 
 <div class="container hidden" id="torneiosArea">
 
-<header>Nexo Studios Torneios</header>
+<h2>Nexo Studios Torneios</h2>
 
 <div class="card">
-<img src="https://i.postimg.cc/vBDwTGw1/cropped.webp" width="150"><br><br>
+<img src="LINK_DA_LOGO_BRAWL_AQUI" width="150"><br><br>
 
 <h3>Brawl Stars Cup NS</h3>
 
@@ -130,7 +125,6 @@ Será definida de acordo com a possibilidade de participação dos finalistas (2
 </div>
 
 </div>
-
 </div>
 
 <script type="module">
@@ -157,6 +151,7 @@ const nome = document.getElementById("nome").value;
 const username = document.getElementById("username").value;
 const email = document.getElementById("email").value;
 const senha = document.getElementById("senha").value;
+const telefone = document.getElementById("telefone").value;
 
 createUserWithEmailAndPassword(auth, email, senha)
 .then((userCredential)=>{
@@ -165,7 +160,9 @@ const user = userCredential.user;
 set(ref(database, "usuarios/" + user.uid), {
 nome:nome,
 username:username,
-email:email
+email:email,
+telefone:telefone,
+aprovado:false
 });
 
 alert("Conta criada!");
@@ -190,18 +187,8 @@ alert(error.message);
 
 onAuthStateChanged(auth, (user)=>{
 if(user){
-const loginTime = localStorage.getItem("loginTime");
-const agora = Date.now();
-const trintaDias = 1000*60*60*24*30;
-
-if(loginTime && (agora - loginTime < trintaDias)){
 document.getElementById("loginArea").classList.add("hidden");
 document.getElementById("torneiosArea").classList.remove("hidden");
-document.getElementById("topo").innerText = "Nexo Studios Torneios";
-}else{
-auth.signOut();
-localStorage.removeItem("loginTime");
-}
 }
 });
 
@@ -215,14 +202,12 @@ window.voltarInicio = function(){
 window.location.href = "https://sites.google.com/view/nexostudios/in%C3%ADcio";
 }
 
-/* ===== FUNÇÕES ADICIONADAS ===== */
-
 window.pagarPix = function(){
 alert("Chave Pix:\nBernardmachado14@gmail.com");
 }
 
 window.pagarPessoal = function(){
-alert("Mensagem enviada com sucesso.\nAguarde o prazo de até 24 horas para resposta.");
+alert("Mensagem enviada com sucesso.\nAguarde até 24 horas para resposta.");
 }
 
 </script>
