@@ -1,1 +1,225 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nexo Studios</title>
 
+<style>
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#0f0f0f;
+  color:white;
+  text-align:center;
+}
+
+header{
+  background:#111;
+  padding:20px;
+  font-size:24px;
+  font-weight:bold;
+  color:#00ff88; /* Verde neon */
+}
+
+.container{
+  margin-top:40px;
+}
+
+input{
+  display:block;
+  margin:10px auto;
+  padding:10px;
+  width:250px;
+  border-radius:5px;
+  border:none;
+  outline:none;
+  background:#1c1c1c;
+  color:white;
+  border:1px solid #00ff88;
+}
+
+button{
+  padding:10px 20px;
+  margin:5px;
+  border:none;
+  border-radius:5px;
+  cursor:pointer;
+  font-weight:bold;
+  transition:0.3s;
+}
+
+.primary{
+  background:#00ff88; /* Verde neon */
+  color:black;
+}
+
+.primary:hover{
+  background:#00ccff; /* Azul neon inglês */
+  color:white;
+  box-shadow:0 0 10px #00ccff;
+}
+
+.secondary{
+  background:#00ccff; /* Azul neon inglês */
+  color:black;
+}
+
+.secondary:hover{
+  background:#00ff88;
+  box-shadow:0 0 10px #00ff88;
+}
+
+.hidden{
+  display:none;
+}
+
+.card{
+  background:#1a1a1a;
+  padding:20px;
+  margin:20px auto;
+  width:300px;
+  border-radius:10px;
+  border:1px solid #00ff88;
+  box-shadow:0 0 15px rgba(0,255,136,0.3);
+}
+</style>
+</head>
+
+<body>
+
+<header id="topo">Nexo Studios Login</header>
+
+<div class="container" id="loginArea">
+
+<input type="text" id="nome" placeholder="Nome">
+<input type="text" id="username" placeholder="Username">
+<input type="email" id="email" placeholder="Email">
+<input type="password" id="senha" placeholder="Senha">
+
+<button class="primary" onclick="criarConta()">Criar Conta</button>
+<button class="secondary" onclick="entrar()">Entrar</button>
+
+</div>
+
+<div class="container hidden" id="torneiosArea">
+
+<header>Nexo Studios Torneios</header>
+
+<div class="card">
+<img src="https://i.postimg.cc/vBDwTGw1/cropped.webp" width="150"><br><br>
+
+<h3>Brawl Stars Cup NS</h3>
+<p><b>Data de entrada:</b><br>
+1º de março às 16:00<br>
+(Fase de grupos e eliminatória)</p>
+
+<p><b>Final:</b><br>
+Será definida de acordo com a possibilidade de participação dos finalistas (2 finalistas).</p>
+
+<input type="text" id="numero" placeholder="Digite seu número">
+
+<button class="primary" onclick="enviarNumero()" id="btnEnviar">Enviar Número</button>
+
+<div id="pagamentoArea" class="hidden">
+<button class="primary">Pagar via Pix</button>
+<button class="secondary">Pagar pessoalmente</button>
+<br><br>
+<button class="secondary" onclick="voltarInicio()">Voltar para aba inicial</button>
+</div>
+
+</div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+apiKey: "AIzaSyDj5-aBr2n_wg80HswcaIOjetm7DtxILSI",
+authDomain: "nexostudios-site-e9458.firebaseapp.com",
+databaseURL: "https://nexostudios-site-e9458-default-rtdb.firebaseio.com",
+projectId: "nexostudios-site-e9458",
+storageBucket: "nexostudios-site-e9458.firebasestorage.app",
+messagingSenderId: "247851109985",
+appId: "1:247851109985:web:1b8903891240c55a376420"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const database = getDatabase(app);
+
+// Criar conta
+window.criarConta = function(){
+const nome = document.getElementById("nome").value;
+const username = document.getElementById("username").value;
+const email = document.getElementById("email").value;
+const senha = document.getElementById("senha").value;
+
+createUserWithEmailAndPassword(auth, email, senha)
+.then((userCredential)=>{
+const user = userCredential.user;
+
+set(ref(database, "usuarios/" + user.uid), {
+nome:nome,
+username:username,
+email:email
+});
+
+alert("Conta criada!");
+})
+.catch(error=>{
+alert(error.message);
+});
+}
+
+// Entrar
+window.entrar = function(){
+const email = document.getElementById("email").value;
+const senha = document.getElementById("senha").value;
+
+signInWithEmailAndPassword(auth, email, senha)
+.then(()=>{
+localStorage.setItem("loginTime", Date.now());
+})
+.catch(error=>{
+alert(error.message);
+});
+}
+
+// Sessão 30 dias
+onAuthStateChanged(auth, (user)=>{
+if(user){
+const loginTime = localStorage.getItem("loginTime");
+const agora = Date.now();
+const trintaDias = 1000*60*60*24*30;
+
+if(loginTime && (agora - loginTime < trintaDias)){
+document.getElementById("loginArea").classList.add("hidden");
+document.getElementById("torneiosArea").classList.remove("hidden");
+document.getElementById("topo").innerText = "Nexo Studios Torneios";
+}else{
+auth.signOut();
+localStorage.removeItem("loginTime");
+}
+}
+});
+
+// Enviar número
+window.enviarNumero = function(){
+document.getElementById("numero").style.display="none";
+document.getElementById("btnEnviar").style.display="none";
+document.getElementById("pagamentoArea").classList.remove("hidden");
+}
+
+// Voltar para site principal
+window.voltarInicio = function(){
+window.location.href = "https://sites.google.com/view/nexostudios/in%C3%ADcio";
+}
+
+</script>
+
+</body>
+  </html>
