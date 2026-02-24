@@ -80,8 +80,6 @@ button{
 
 <body>
 
-<!-- REMOVI O PRIMEIRO HEADER DAQUI -->
-
 <div class="container" id="loginArea">
 
 <h2>Nexo Studios Login</h2>
@@ -102,7 +100,7 @@ button{
 <h2>Nexo Studios Torneios</h2>
 
 <div class="card">
-<img src="LINK_DA_LOGO_BRAWL_AQUI" width="150"><br><br>
+<img src="https://i.postimg.cc/vBDwTGw1/cropped.webp" width="150"><br><br>
 
 <h3>Brawl Stars Cup NS</h3>
 
@@ -113,16 +111,12 @@ button{
 <p><b>Final:</b><br>
 Será definida de acordo com a possibilidade de participação dos finalistas (2 finalistas).</p>
 
-<input type="text" id="numero" placeholder="Digite seu número">
+<br>
 
-<button class="primary" onclick="enviarNumero()" id="btnEnviar">Enviar Número</button>
-
-<div id="pagamentoArea" class="hidden">
 <button class="primary" onclick="pagarPix()">Pagar via Pix</button>
 <button class="secondary" onclick="pagarPessoal()">Pagar pessoalmente</button>
 <br><br>
 <button class="secondary" onclick="voltarInicio()">Voltar para aba inicial</button>
-</div>
 
 </div>
 </div>
@@ -177,9 +171,6 @@ const email = document.getElementById("email").value;
 const senha = document.getElementById("senha").value;
 
 signInWithEmailAndPassword(auth, email, senha)
-.then(()=>{
-localStorage.setItem("loginTime", Date.now());
-})
 .catch(error=>{
 alert(error.message);
 });
@@ -192,22 +183,18 @@ document.getElementById("torneiosArea").classList.remove("hidden");
 }
 });
 
-window.enviarNumero = function(){
-document.getElementById("numero").style.display="none";
-document.getElementById("btnEnviar").style.display="none";
-document.getElementById("pagamentoArea").classList.remove("hidden");
+window.pagarPix = function(){
+const chavePix = "Bernardmachado14@gmail.com";
+navigator.clipboard.writeText(chavePix);
+alert("Chave Pix copiada automaticamente!\n\n" + chavePix);
+}
+
+window.pagarPessoal = function(){
+alert("Pagamento presencial registrado.\nAguarde até 24 horas para confirmação.");
 }
 
 window.voltarInicio = function(){
 window.location.href = "https://sites.google.com/view/nexostudios/in%C3%ADcio";
-}
-
-window.pagarPix = function(){
-alert("Chave Pix:\nBernardmachado14@gmail.com");
-}
-
-window.pagarPessoal = function(){
-alert("Mensagem enviada com sucesso.\nAguarde até 24 horas para resposta.");
 }
 
 </script>
