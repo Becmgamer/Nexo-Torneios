@@ -1,78 +1,173 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Grix Studios Torneios</title>
+<title>Grix Studios</title>
 
 <style>
 body{
   margin:0;
   font-family:Arial, sans-serif;
-  background:#0f0f1a;
+  background:#0f0f0f;
   color:white;
   text-align:center;
 }
 
 .container{
-  padding:20px;
+  margin-top:40px;
 }
 
-.cards{
-  display:flex;
-  justify-content:center;
-  gap:40px;
-  flex-wrap:wrap;
-  margin-top:30px;
-}
-
-.card{
-  background:#1c1c2e;
-  padding:25px;
-  border-radius:15px;
-  width:320px;
-  box-shadow:0 0 20px rgba(0,255,255,0.2);
-}
-
-.card img{
-  width:150px;
+input{
+  display:block;
+  margin:10px auto;
+  padding:10px;
+  width:250px;
+  border-radius:5px;
+  border:none;
+  background:#1c1c1c;
+  color:white;
+  border:1px solid #00ff88;
 }
 
 button{
-  padding:10px 18px;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
+  padding:10px 20px;
   margin:5px;
+  border:none;
+  border-radius:5px;
+  cursor:pointer;
   font-weight:bold;
+  transition:0.3s;
 }
 
 .primary{
-  background:#00c3ff;
-  color:white;
+  background:#00ff88;
+  color:black;
 }
 
 .secondary{
-  background:#2e2e4d;
-  color:white;
+  background:#00ccff;
+  color:black;
 }
 
-button:hover{
-  opacity:0.85;
+.hidden{
+  display:none;
+}
+
+.torneios-wrapper{
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:20px;
+}
+
+.card{
+  background:#1a1a1a;
+  padding:20px;
+  width:320px;
+  border-radius:10px;
+  border:1px solid #00ff88;
+  box-shadow:0 0 15px rgba(0,255,136,0.3);
+}
+
+img{
+  width:150px;
+  height:150px;
+  object-fit:cover;
 }
 
 @media(max-width:768px){
-  .cards{
+  .torneios-wrapper{
     flex-direction:column;
     align-items:center;
   }
 }
 </style>
+</head>
 
-<!-- Firebase -->
+<body>
+
+<div class="container" id="loginArea">
+<h2>Grix Studios Login</h2>
+
+<input type="text" id="nome" placeholder="Nome">
+<input type="text" id="username" placeholder="Username">
+<input type="email" id="email" placeholder="Email">
+<input type="password" id="senha" placeholder="Senha">
+<input type="text" id="telefone" placeholder="Telefone">
+
+<button class="primary" onclick="criarConta()">Criar Conta</button>
+<button class="secondary" onclick="entrar()">Entrar</button>
+</div>
+
+<div class="container hidden" id="torneiosArea">
+<h2>Torneios Oficiais</h2>
+
+<div class="torneios-wrapper">
+
+<!-- BRAWL STARS -->
+<div class="card">
+<img src="https://i.postimg.cc/vBDwTGw1/cropped.webp"><br><br>
+
+<h3>Brawl Stars Cup GS</h3>
+
+<p><b>Última chance de entrada!</b></p>
+
+<p><b>Data:</b> 1º de março às 16:00</p>
+
+<p><b>Taxa de entrada:</b> R$ 0,50</p>
+
+<p><b>Prêmios:</b><br>
+1º Lugar: R$10<br>
+2º Lugar: R$3<br>
+3º Lugar: R$1<br>
++ Troféu físico personalizado</p>
+
+<p><b>Mínimo para acontecer:</b> 6 jogadores</p>
+
+<p><b>Vagas ocupadas:</b> <span id="vagasBrawl">0</span></p>
+
+<button class="primary" onclick="pagarPix('BrawlStars')">Pagar via Pix</button>
+<button class="secondary" onclick="pagarPresencial('BrawlStars')">Pagar presencialmente</button>
+<br><br>
+<button class="secondary" onclick="voltarInicio()">Voltar para aba inicial</button>
+</div>
+
+<!-- CLASH ROYALE -->
+<div class="card">
+<img src="https://i.postimg.cc/9MTkJZy1/images.jpg"><br><br>
+
+<h3>Clash Royale Cup GS</h3>
+
+<p><b>Última chance de entrada!</b></p>
+
+<p><b>Data:</b> 7 de março às 16:00</p>
+
+<p><b>Taxa de entrada:</b> R$ 1,00</p>
+
+<p><b>Prêmios:</b><br>
+1º Lugar: R$5<br>
+2º Lugar: R$3<br>
+3º Lugar: R$1<br>
++ Troféu físico personalizado</p>
+
+<p><b>Mínimo para acontecer:</b> 6 jogadores</p>
+
+<p><b>Vagas ocupadas:</b> <span id="vagasClash">0</span></p>
+
+<button class="primary" onclick="pagarPix('ClashRoyale')">Pagar via Pix</button>
+<button class="secondary" onclick="pagarPresencial('ClashRoyale')">Pagar presencialmente</button>
+<br><br>
+<button class="secondary" onclick="voltarInicio()">Voltar para aba inicial</button>
+</div>
+
+</div>
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDj5-aBr2n_wg80HswcaIOjetm7DtxILSI",
@@ -85,99 +180,66 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 const db = getDatabase(app);
 
-const chavePix = "bernardmachado14@gmail.com";
+window.criarConta = function(){
+createUserWithEmailAndPassword(auth,email.value,senha.value);
+}
+
+window.entrar = function(){
+signInWithEmailAndPassword(auth,email.value,senha.value);
+}
+
+onAuthStateChanged(auth,(user)=>{
+if(user){
+loginArea.classList.add("hidden");
+torneiosArea.classList.remove("hidden");
+}
+});
+
+async function salvarNoTorneio(torneio,pagamento){
+const user = auth.currentUser;
+
+await set(ref(db,"torneios/"+torneio+"/"+user.uid),{
+nome:nome.value,
+email:email.value,
+telefone:telefone.value,
+pagamento:pagamento,
+status:"aguardando_confirmacao",
+data:new Date().toISOString()
+});
+}
 
 window.pagarPix = function(torneio){
-  navigator.clipboard.writeText(chavePix).then(()=>{
-    salvarInscricao(torneio);
-    alert("Chave Pix copiada e inscrição registrada com sucesso!");
-  });
+navigator.clipboard.writeText("bernardomachado14@gmail.com");
+alert("Chave Pix copiada automaticamente!\nApós pagar, aguarde confirmação em até 24 horas no WhatsApp.");
+salvarNoTorneio(torneio,"Pix");
 }
 
-window.pagarPessoal = function(torneio){
-  salvarInscricao(torneio);
-  alert("Sua mensagem foi enviada com sucesso.\nEspere até 24 horas para confirmação.");
-}
-
-function salvarInscricao(torneio){
-  const usuarioId = "user_" + Date.now();
-
-  set(ref(db, "torneios/" + torneio + "/" + usuarioId), {
-    data: new Date().toISOString(),
-    status: "aguardando confirmação"
-  });
+window.pagarPresencial = function(torneio){
+alert("Sua mensagem foi enviada com sucesso.\nEspere até 24 horas para confirmação.");
+salvarNoTorneio(torneio,"Presencial");
 }
 
 window.voltarInicio = function(){
-  window.location.href = "https://sites.google.com/view/grixstudios/início";
+window.location.href="https://sites.google.com/view/grixstudios/in%C3%ADcio";
 }
+
+function atualizarVagas(){
+["BrawlStars","ClashRoyale"].forEach(torneio=>{
+onValue(ref(db,"torneios/"+torneio),(snapshot)=>{
+const total = snapshot.exists()?Object.keys(snapshot.val()).length:0;
+if(torneio==="BrawlStars"){
+document.getElementById("vagasBrawl").innerText=total;
+}else{
+document.getElementById("vagasClash").innerText=total;
+}
+});
+});
+}
+atualizarVagas();
 </script>
-
-</head>
-<body>
-
-<div class="container">
-
-<h2>Grix Studios Torneios</h2>
-
-<div class="cards">
-
-<!-- BRAWL STARS -->
-<div class="card">
-
-<img src="https://i.postimg.cc/vBDwTGw1/cropped.webp">
-
-<h3>Brawl Stars Cup GS</h3>
-
-<p><b>⚠ Última chance de entrada!</b></p>
-
-<p>
-<b>Data:</b><br>
-1º de março às 16:00<br>
-Fase de grupos e eliminatórias
-</p>
-
-<p>
-<b>Final e 3º Lugar:</b><br>
-Definidos conforme disponibilidade dos finalistas.
-</p>
-
-<button class="primary" onclick="pagarPix('brawlStars')">Pagar via Pix</button>
-<button class="secondary" onclick="pagarPessoal('brawlStars')">Pagar pessoalmente</button>
-<br>
-<button class="secondary" onclick="voltarInicio()">Voltar para aba inicial</button>
-
-</div>
-
-<!-- CLASH ROYALE -->
-<div class="card">
-
-<img src="https://i.postimg.cc/9MTkJZy1/images.jpg">
-
-<h3>Clash Royale Cup GS</h3>
-
-<p>
-<b>Data:</b><br>
-07 de março às 16:00
-</p>
-
-<p>
-<b>Formato:</b><br>
-Fase de grupos, eliminatórias, final e terceiro lugar.<br>
-Tudo no mesmo dia.
-</p>
-
-<button class="primary" onclick="pagarPix('clashRoyale')">Pagar via Pix</button>
-<button class="secondary" onclick="pagarPessoal('clashRoyale')">Pagar pessoalmente</button>
-<br>
-<button class="secondary" onclick="voltarInicio()">Voltar para aba inicial</button>
-
-</div>
-
-</div>
-</div>
 
 </body>
 </html>
