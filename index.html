@@ -77,8 +77,8 @@ button{
     <p><b>Taxa de entrada:</b> R$0,50</p>
     <p><b>Prêmios:</b> 1º R$10, 2º R$3, 3º R$1</p>
     <p class="count" id="brawlCount">Vagas ocupadas: 0</p>
-    <button class="primary" onclick="inscrever('Brawl Stars')">Pagar via Pix</button>
-    <button class="secondary" onclick="pagarPessoal('Brawl Stars')">Pagar pessoalmente</button>
+    <button class="primary" id="brawlPix">Pagar via Pix</button>
+    <button class="secondary" id="brawlPresencial">Pagar pessoalmente</button>
   </div>
 
   <!-- Clash Royale -->
@@ -90,63 +90,34 @@ button{
     <p><b>Taxa de entrada:</b> R$1,00</p>
     <p><b>Prêmios:</b> 1º R$5, 2º R$3, 3º R$1 + troféu físico personalizado</p>
     <p class="count" id="clashCount">Vagas ocupadas: 0</p>
-    <button class="primary" onclick="inscrever('Clash Royale')">Pagar via Pix</button>
-    <button class="secondary" onclick="pagarPessoal('Clash Royale')">Pagar pessoalmente</button>
+    <button class="primary" id="clashPix">Pagar via Pix</button>
+    <button class="secondary" id="clashPresencial">Pagar pessoalmente</button>
   </div>
 
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getDatabase, ref, set, get, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-// Config Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyDj5-aBr2n_wg80HswcaIOjetm7DtxILSI",
-  authDomain: "nexostudios-site-e9458.firebaseapp.com",
-  databaseURL: "https://nexostudios-site-e9458-default-rtdb.firebaseio.com",
-  projectId: "nexostudios-site-e9458",
-  storageBucket: "nexostudios-site-e9458.firebasestorage.app",
-  messagingSenderId: "247851109985",
-  appId: "1:247851109985:web:1b8903891240c55a376420"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getDatabase(app);
-
-const limites = { "Brawl Stars":6, "Clash Royale":6 };
-const caminhos = { "Brawl Stars":"torneio/Brawl Stars/inscritos", "Clash Royale":"torneio/Clash Royale/inscritos" };
-
-function atualizarContagem(game){
-  get(ref(db, caminhos[game])).then(snapshot=>{
-    const count = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
-    document.getElementById(game==='Brawl Stars'?'brawlCount':'clashCount').innerText = `Vagas ocupadas: ${count}`;
-  });
-}
-
-// Alteração dos botões: apenas mensagem informativa
-function inscrever(game){
-  alert(`📌 Copie o e-mail para Pix: bernardmachado14@gmail.com e Faça a transferência e espere a confirmação em até 24 horas.`);
-  if(confirm("Deseja voltar para a aba inicial?")){
+<script>
+// Funções dos botões com mensagens
+function mostrarPix() {
+  alert("📌 Copie o e-mail para Pix: bernardemachado14@gmail.com\nFaça a transferência e espere a confirmação em até 24 horas.");
+  if(confirm("Deseja voltar para a aba inicial?")) {
     window.location.href = "https://site.google.com/viu/grixstudios/inicio";
   }
 }
 
-function pagarPessoal(game){
+function mostrarPresencial() {
   alert("Sua mensagem foi enviada com sucesso. Espere até 24 horas para confirmação.");
-  if(confirm("Deseja voltar para a aba inicial?")){
+  if(confirm("Deseja voltar para a aba inicial?")) {
     window.location.href = "https://site.google.com/viu/grixstudios/inicio";
   }
 }
 
-onAuthStateChanged(auth,user=>{
-  if(user){
-    atualizarContagem("Brawl Stars");
-    atualizarContagem("Clash Royale");
-  }
-});
+// Adicionando eventos aos botões
+document.getElementById("brawlPix").addEventListener("click", mostrarPix);
+document.getElementById("brawlPresencial").addEventListener("click", mostrarPresencial);
+document.getElementById("clashPix").addEventListener("click", mostrarPix);
+document.getElementById("clashPresencial").addEventListener("click", mostrarPresencial);
 </script>
+
 </body>
 </html>
