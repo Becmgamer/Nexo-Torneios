@@ -74,9 +74,6 @@ button{
   border-radius:10px;
   border:1px solid #00ff88;
   box-shadow:0 0 15px rgba(0,255,136,0.3);
-  display:inline-block;
-  vertical-align:top;
-  margin-right:20px;
 }
 </style>
 </head>
@@ -109,7 +106,8 @@ button{
 <p><b>Taxa de entrada:</b> R$0,50</p>
 <p><b>Prêmios:</b> 1º lugar R$10, 2º lugar R$3, 3º lugar R$1</p>
 <p><b>Última chance de entrada:</b> 1º de março às 16:00</p>
-<p><b>Fase de grupos e eliminatórias, final e 3º lugar:</b> Será definida de acordo com a possibilidade de participação dos finalistas</p>
+<p><b>Data:</b> 1º de março, fase de grupos eliminatórias</p>
+<p><b>Final e 3º Lugar:</b> Será definida de acordo com a possibilidade de participação dos finalistas</p>
 
 <button class="primary" onclick="pagarPix('brawlStars')">Pagar via Pix</button>
 <button class="secondary" onclick="pagarPessoal('brawlStars')">Pagar pessoalmente</button>
@@ -119,13 +117,13 @@ button{
 
 <!-- Clash Royale Cup GS -->
 <div class="card">
-<img src="https://i.postimg.cc/9MTkJZy1/images.jpg" width="150"><br><br>
+<img src="https://i.postimg.cc/zDGRB0rV/clash-royale.png" width="150"><br><br>
 <h3>Clash Royale Cup GS</h3>
 <p><b>Taxa de entrada:</b> R$1,00</p>
-<p><b>Prêmios:</b> 1º lugar R$5, 2º lugar R$3, 3º lugar R$1</p>
-<p><b>Troféu físico personalizado para 1º, 2º e 3º lugar</b></p>
-<p><b>Data:</b> 7 de março às 16:00</p>
-<p><b>Formato:</b> Fase de grupos eliminatórias, final e 3º lugar no mesmo dia</p>
+<p><b>Prêmios:</b> 1º lugar R$5 + troféu físico personalizado, 2º lugar R$3 + troféu, 3º lugar R$1 + troféu</p>
+<p><b>Última chance de entrada:</b> 7 de março às 16:00</p>
+<p><b>Data:</b> 7 de março, fase de grupos eliminatórias</p>
+<p><b>Formato:</b> Final e 3º lugar no mesmo dia</p>
 
 <button class="primary" onclick="pagarPix('clashRoyale')">Pagar via Pix</button>
 <button class="secondary" onclick="pagarPessoal('clashRoyale')">Pagar pessoalmente</button>
@@ -141,109 +139,88 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, on
 import { getDatabase, ref, set, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDj5-aBr2n_wg80HswcaIOjetm7DtxILSI",
-  authDomain: "nexostudios-site-e9458.firebaseapp.com",
-  databaseURL: "https://nexostudios-site-e9458-default-rtdb.firebaseio.com",
-  projectId: "nexostudios-site-e9458",
-  storageBucket: "nexostudios-site-e9458.firebasestorage.app",
-  messagingSenderId: "247851109985",
-  appId: "1:247851109985:web:1b8903891240c55a376420"
+apiKey: "AIzaSyDj5-aBr2n_wg80HswcaIOjetm7DtxILSI",
+authDomain: "nexostudios-site-e9458.firebaseapp.com",
+databaseURL: "https://nexostudios-site-e9458-default-rtdb.firebaseio.com",
+projectId: "nexostudios-site-e9458",
+storageBucket: "nexostudios-site-e9458.firebasestorage.app",
+messagingSenderId: "247851109985",
+appId: "1:247851109985:web:1b8903891240c55a376420"
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getDatabase(app);
+const database = getDatabase(app);
 
 window.criarConta = function(){
-  const nome = document.getElementById("nome").value;
-  const username = document.getElementById("username").value;
-  const email = document.getElementById("email").value;
-  const senha = document.getElementById("senha").value;
-  const telefone = document.getElementById("telefone").value;
+const nome = document.getElementById("nome").value;
+const username = document.getElementById("username").value;
+const email = document.getElementById("email").value;
+const senha = document.getElementById("senha").value;
+const telefone = document.getElementById("telefone").value;
 
-  createUserWithEmailAndPassword(auth, email, senha)
-    .then((userCredential)=>{
-      const user = userCredential.user;
+createUserWithEmailAndPassword(auth, email, senha)
+.then((userCredential)=>{
+const user = userCredential.user;
 
-      set(ref(db, "usuarios/" + user.uid), {
-        nome:nome,
-        username:username,
-        email:email,
-        telefone:telefone,
-        aprovado:false
-      });
+set(ref(database, "usuarios/" + user.uid), {
+nome:nome,
+username:username,
+email:email,
+telefone:telefone,
+aprovado:false
+});
 
-      alert("Conta criada!");
-    })
-    .catch(error=>{
-      alert(error.message);
-    });
+alert("Conta criada!");
+})
+.catch(error=>{
+alert(error.message);
+});
 }
 
 window.entrar = function(){
-  const email = document.getElementById("email").value;
-  const senha = document.getElementById("senha").value;
+const email = document.getElementById("email").value;
+const senha = document.getElementById("senha").value;
 
-  signInWithEmailAndPassword(auth, email, senha)
-    .catch(error=>{
-      alert(error.message);
-    });
+signInWithEmailAndPassword(auth, email, senha)
+.catch(error=>{
+alert(error.message);
+});
 }
 
 onAuthStateChanged(auth, (user)=>{
-  if(user){
-    document.getElementById("loginArea").classList.add("hidden");
-    document.getElementById("torneiosArea").classList.remove("hidden");
-  }
+if(user){
+document.getElementById("loginArea").classList.add("hidden");
+document.getElementById("torneiosArea").classList.remove("hidden");
+}
 });
 
 window.pagarPix = function(torneio){
-  const chavePix = "Bernardmachado14@gmail.com";
-  navigator.clipboard.writeText(chavePix);
-  alert("Chave Pix copiada automaticamente!\n\n" + chavePix);
+const chavePix = "Bernardmachado14@gmail.com";
+navigator.clipboard.writeText(chavePix);
+alert("Chave Pix copiada automaticamente!\n\n" + chavePix);
 
-  const user = auth.currentUser;
-  if(user){
-    const nome = document.getElementById("nome").value;
-    const username = document.getElementById("username").value;
-    const telefone = document.getElementById("telefone").value;
-
-    push(ref(db, "torneios/" + torneio + "/inscritos"), {
-      uid: user.uid,
-      nome: nome,
-      username: username,
-      email: user.email,
-      telefone: telefone,
-      data: new Date().toLocaleString(),
-      status: false
-    });
-  }
+// Registrar inscrição no Firebase
+const user = auth.currentUser;
+if(user){
+push(ref(database, "torneios/" + torneio + "/inscritos"), {
+uid:user.uid,
+nome:user.displayName || "",
+email:user.email,
+telefone:"",
+data: new Date().toISOString()
+});
+}
 }
 
 window.pagarPessoal = function(torneio){
-  alert("Sua mensagem foi enviada com sucesso.\nEspere até 24 horas para confirmação.");
-
-  const user = auth.currentUser;
-  if(user){
-    const nome = document.getElementById("nome").value;
-    const username = document.getElementById("username").value;
-    const telefone = document.getElementById("telefone").value;
-
-    push(ref(db, "torneios/" + torneio + "/inscritos"), {
-      uid: user.uid,
-      nome: nome,
-      username: username,
-      email: user.email,
-      telefone: telefone,
-      data: new Date().toLocaleString(),
-      status: false
-    });
-  }
+alert("Sua mensagem foi enviada com sucesso.\nAguarde até um prazo de 24 horas para confirmação.");
 }
 
 window.voltarInicio = function(){
-  window.location.href = "https://sites.google.com/view/grixstudios/início";
+window.location.href = "https://sites.google.com/view/grixstudios/início";
 }
+
 </script>
 
 </body>
