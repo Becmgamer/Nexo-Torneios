@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Grix Studios Torneios</title>
+<title>Grix Studios</title>
+
 <style>
 body{
   margin:0;
@@ -12,24 +13,26 @@ body{
   color:white;
   text-align:center;
 }
-h1{
-  margin-top:20px;
-}
+
 .container{
+  margin-top:40px;
+}
+
+.cards{
   display:flex;
   justify-content:center;
   flex-wrap:wrap;
-  margin-top:40px;
+  gap:20px;
 }
+
 .card{
   background:#1a1a1a;
   padding:20px;
-  margin:20px;
-  width:300px;
+  width:320px;
   border-radius:10px;
   border:1px solid #00ff88;
-  box-shadow:0 0 15px rgba(0,255,136,0.3);
 }
+
 button{
   padding:10px 20px;
   margin:5px;
@@ -37,71 +40,62 @@ button{
   border-radius:5px;
   cursor:pointer;
   font-weight:bold;
-  transition:0.3s;
 }
+
 .primary{
   background:#00ff88;
   color:black;
 }
-.primary:hover{
-  background:#00ccff;
-  color:white;
-  box-shadow:0 0 10px #00ccff;
-}
+
 .secondary{
   background:#00ccff;
   color:black;
 }
-.secondary:hover{
-  background:#00ff88;
-  box-shadow:0 0 10px #00ff88;
-}
-.count{
-  font-size:14px;
-  margin-bottom:10px;
+
+.hidden{
+  display:none;
 }
 </style>
 </head>
+
 <body>
-
-<h1>Grix Studios Torneios</h1>
-
-<div class="container" id="torneiosArea">
-
-  <!-- Brawl Stars -->
-  <div class="card" id="brawlCard">
-    <img src="https://i.postimg.cc/vBDwTGw1/cropped.webp" width="150"><br><br>
-    <h3>Brawl Stars Cup GS</h3>
-    <p><b>Data de entrada:</b><br>1º de março às 16:00</p>
-    <p><b>Final e 3º Lugar:</b><br>Será definido de acordo com a possibilidade dos finalistas</p>
-    <p><b>Taxa de entrada:</b> R$0,50</p>
-    <p><b>Prêmios:</b> 1º R$10, 2º R$3, 3º R$1</p>
-    <p class="count" id="brawlCount">Vagas ocupadas: 0</p>
-    <button class="primary" id="brawlPix">Pagar via Pix</button>
-    <button class="secondary" id="brawlPresencial">Pagar pessoalmente</button>
-  </div>
-
-  <!-- Clash Royale -->
-  <div class="card" id="clashCard">
-    <img src="https://i.postimg.cc/9MTkJZy1/images.jpg" width="150"><br><br> <!-- Troque pelo link correto -->
-    <h3>Clash Royale Cup GS</h3>
-    <p><b>Data de entrada:</b><br>7 de março às 16:00</p>
-    <p><b>Formato:</b><br>Fase de grupos e eliminatórias, final e 3º lugar no mesmo dia</p>
-    <p><b>Taxa de entrada:</b> R$1,00</p>
-    <p><b>Prêmios:</b> 1º R$5, 2º R$3, 3º R$1 + troféu físico personalizado</p>
-    <p class="count" id="clashCount">Vagas ocupadas: 0</p>
-    <button class="primary" id="clashPix">Pagar via Pix</button>
-    <button class="secondary" id="clashPresencial">Pagar pessoalmente</button>
-  </div>
 
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getDatabase, ref, set, get, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+<div class="container hidden" id="torneiosArea">
+<h2>Torneios Disponíveis</h2>
 
-// Config Firebase
+<div class="cards">
+
+<div class="card">
+<h3>Brawl Stars Cup GS</h3>
+<p>Taxa: R$0,50</p>
+<p>Prêmios: 1º R$10 | 2º R$3 | 3º R$1</p>
+<p id="vagasBrawl"></p>
+
+<button class="primary" onclick="pagarPix('BrawlStars')">Pagar via Pix</button>
+<button class="secondary" onclick="pagarPessoal()">Pagar presencial</button>
+</div>
+
+<div class="card">
+<h3>Clash Royale</h3>
+<p>Taxa: R$1,00</p>
+<p>Prêmios: 1º R$5 | 2º R$3 | 3º R$1</p>
+<p id="vagasClash"></p>
+
+<button class="primary" onclick="pagarPix('ClashRoyale')">Pagar via Pix</button>
+<button class="secondary" onclick="pagarPessoal()">Pagar presencial</button>
+</div>
+
+</div>
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getDatabase, ref, set, get, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
 const firebaseConfig = {
   apiKey: "AIzaSyDj5-aBr2n_wg80HswcaIOjetm7DtxILSI",
   authDomain: "nexostudios-site-e9458.firebaseapp.com",
@@ -116,75 +110,87 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
-const limites = { "Brawl Stars":6, "Clash Royale":6 };
-const caminhos = { "Brawl Stars":"torneio/Brawl Stars/inscritos", "Clash Royale":"torneio/Clash Royale/inscritos" };
+window.criarConta = async function(){
+  const nome = document.getElementById("nome").value;
+  const email = document.getElementById("email").value;
+  const senha = document.getElementById("senha").value;
+  const telefone = document.getElementById("telefone").value;
 
-// Atualiza contagem
-function atualizarContagem(game){
-  get(ref(db, caminhos[game])).then(snapshot=>{
-    const count = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
-    document.getElementById(game==='Brawl Stars'?'brawlCount':'clashCount').innerText = `Vagas ocupadas: ${count}`;
+  const userCredential = await createUserWithEmailAndPassword(auth,email,senha);
+  const uid = userCredential.user.uid;
+
+  await set(ref(db,"usuarios/"+uid),{
+    nome,email,telefone
   });
+
+  alert("Conta criada!");
 }
 
-// Função comum para inscrição no Firebase
-function inscreverNoFirebase(game){
-  const user = auth.currentUser;
-  if(!user){
-    alert("Faça login primeiro.");
-    return;
-  }
-  const path = ref(db, caminhos[game]);
-  get(path).then(snapshot=>{
-    const inscritos = snapshot.exists() ? snapshot.val() : {};
-    const ativos = Object.values(inscritos).filter(i=>i.status).length;
-    if(ativos >= limites[game]){
-      alert("Torneio já está lotado, tente o próximo torneio.");
-      return;
-    }
-    const key = push(path).key;
-    set(ref(db, caminhos[game]+"/"+key), {
-      nome: user.displayName || "Sem nome",
-      email: user.email,
-      telefone: user.phoneNumber || "Sem telefone",
-      status: true,
-      data: new Date().toISOString()
-    }).then(()=> atualizarContagem(game));
-  });
+window.entrar = async function(){
+  const email = document.getElementById("email").value;
+  const senha = document.getElementById("senha").value;
+  await signInWithEmailAndPassword(auth,email,senha);
 }
 
-// Botão Pix
-function pagarViaPix(game){
-  inscreverNoFirebase(game);
-  navigator.clipboard.writeText("bernardmachado14@gmail.com");
-  alert("📌 E-mail do Pix copiado: bernardmachado14@gmail.com\nFaça a transferência e espere a confirmação em até 24 horas.");
-  if(confirm("Deseja voltar para a aba inicial?")){
-    window.location.href = "https://site.google.com/viu/grixstudios/inicio";
-  }
-}
-
-// Botão presencial
-function pagarPessoal(game){
-  inscreverNoFirebase(game);
-  alert("Sua mensagem foi enviada com sucesso. Espere até 24 horas para confirmação.");
-  if(confirm("Deseja voltar para a aba inicial?")){
-    window.location.href = "https://site.google.com/view/grixstudios/inicio";
-  }
-}
-
-// Adiciona eventos aos botões
-document.getElementById("brawlPix").addEventListener("click", ()=>pagarViaPix("Brawl Stars"));
-document.getElementById("brawlPresencial").addEventListener("click", ()=>pagarPessoal("Brawl Stars"));
-document.getElementById("clashPix").addEventListener("click", ()=>pagarViaPix("Clash Royale"));
-document.getElementById("clashPresencial").addEventListener("click", ()=>pagarPessoal("Clash Royale"));
-
-// Atualiza contagem ao logar
-onAuthStateChanged(auth, user=>{
+onAuthStateChanged(auth,(user)=>{
   if(user){
-    atualizarContagem("Brawl Stars");
-    atualizarContagem("Clash Royale");
+    document.getElementById("loginArea").classList.add("hidden");
+    document.getElementById("torneiosArea").classList.remove("hidden");
+    atualizarVagas("BrawlStars","vagasBrawl");
+    atualizarVagas("ClashRoyale","vagasClash");
   }
 });
+
+async function atualizarVagas(torneio,elemento){
+  const snap = await get(ref(db,"torneios/"+torneio));
+  if(!snap.exists()) return;
+
+  const dados = snap.val();
+  const limite = dados.config.limite;
+  const ativos = dados.config.ativo;
+  const inscritos = dados.inscritos ? Object.keys(dados.inscritos).length : 0;
+
+  document.getElementById(elemento).innerText = 
+    "Vagas: "+inscritos+" / "+limite;
+
+  if(inscritos >= limite){
+    await update(ref(db,"torneios/"+torneio+"/config"),{ativo:false});
+  }
+}
+
+window.pagarPix = async function(torneio){
+  const user = auth.currentUser;
+  if(!user) return;
+
+  const snapConfig = await get(ref(db,"torneios/"+torneio+"/config"));
+  const config = snapConfig.val();
+
+  const snapIns = await get(ref(db,"torneios/"+torneio+"/inscritos"));
+  const total = snapIns.exists() ? Object.keys(snapIns.val()).length : 0;
+
+  if(!config.ativo || total >= config.limite){
+    alert("Limite de pessoas atingido.\nAguarde próximo torneio.");
+    return;
+  }
+
+  const snapUser = await get(ref(db,"usuarios/"+user.uid));
+  const dadosUser = snapUser.val();
+
+  await set(ref(db,"torneios/"+torneio+"/pendentes/"+user.uid),{
+    nome:dadosUser.nome,
+    email:dadosUser.email,
+    telefone:dadosUser.telefone,
+    status:"aguardando pagamento"
+  });
+
+  navigator.clipboard.writeText("bernardmachado14@gmail.com");
+  alert("Chave Pix copiada!\nApós pagar aguarde confirmação em até 24h.");
+}
+
+window.pagarPessoal = function(){
+  alert("Mensagem enviada com sucesso.\nEspere até 24 horas para confirmação.");
+}
+
 </script>
 
 </body>
