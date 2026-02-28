@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Grix Studios</title>
+<title>Clickx Studios Torneios</title>
 
 <style>
 body{
@@ -11,6 +11,11 @@ body{
   font-family:Arial, sans-serif;
   background:#0f0f0f;
   color:white;
+  text-align:center;
+}
+
+h1{
+  margin-top:20px;
   text-align:center;
 }
 
@@ -29,19 +34,6 @@ body{
   border-radius:10px;
   border:1px solid #00ff88;
   box-shadow:0 0 15px rgba(0,255,136,0.3);
-}
-
-input{
-  display:block;
-  margin:10px auto;
-  padding:10px;
-  width:250px;
-  border-radius:5px;
-  border:none;
-  outline:none;
-  background:#1c1c1c;
-  color:white;
-  border:1px solid #00ff88;
 }
 
 button{
@@ -85,23 +77,12 @@ button{
 </head>
 <body>
 
-<div class="container" id="loginArea">
-<h2>Grix Studios Login</h2>
-<input type="text" id="nome" placeholder="Nome">
-<input type="text" id="username" placeholder="Username">
-<input type="email" id="email" placeholder="Email">
-<input type="password" id="senha" placeholder="Senha">
-<input type="text" id="telefone" placeholder="Telefone">
+<h1>Clickx Studios Torneios</h1>
 
-<button class="primary" onclick="criarConta()">Criar Conta</button>
-<button class="secondary" onclick="entrar()">Entrar</button>
-</div>
-
-<div class="container hidden" id="torneiosArea">
-<h2>Grix Studios Torneios</h2>
+<div class="container" id="torneiosArea">
 
 <!-- Brawl Stars Cup GS -->
-<div class="card">
+<div class="card" style="margin-right:10px;">
 <img src="https://i.postimg.cc/vBDwTGw1/cropped.webp" width="150"><br><br>
 <h3>Brawl Stars Cup GS</h3>
 <p><b>Última chance de entrada:</b> Amanhã, 16:00</p>
@@ -117,7 +98,8 @@ button{
 
 <!-- Clash Royale Cup GS -->
 <div class="card">
-<img src="https://i.postimg.cc/9MTkJZy1/images.jpg" width="150"><br><br>
+<img src="https://i.postimg.cc/9MTkJZy1/images.jpg
+" width="150"><br><br>
 <h3>Clash Royale Cup GS</h3>
 <p><b>Última chance de entrada:</b> Domingo, 16:00</p>
 <p><b>Data:</b> 7 de março às 16:00</p>
@@ -134,8 +116,8 @@ button{
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 // Firebase Config
 const firebaseConfig = {
@@ -152,42 +134,9 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const database = getDatabase(app);
 
-window.criarConta = function(){
-  const nome = document.getElementById("nome").value;
-  const username = document.getElementById("username").value;
-  const email = document.getElementById("email").value;
-  const senha = document.getElementById("senha").value;
-  const telefone = document.getElementById("telefone").value;
-
-  createUserWithEmailAndPassword(auth, email, senha)
-  .then((userCredential)=>{
-    const user = userCredential.user;
-    set(ref(database, "usuarios/" + user.uid), {
-      nome:nome,
-      username:username,
-      email:email,
-      telefone:telefone,
-      aprovado:false
-    });
-    alert("Conta criada!");
-  })
-  .catch(error=>{
-    alert(error.message);
-  });
-}
-
-window.entrar = function(){
-  const email = document.getElementById("email").value;
-  const senha = document.getElementById("senha").value;
-  signInWithEmailAndPassword(auth, email, senha)
-  .catch(error=>{
-    alert(error.message);
-  });
-}
-
 onAuthStateChanged(auth, (user)=>{
   if(user){
-    document.getElementById("loginArea").classList.add("hidden");
+    // Não precisa de login visível, pega automaticamente
     document.getElementById("torneiosArea").classList.remove("hidden");
   }
 });
@@ -196,27 +145,32 @@ window.pagarPix = function(torneio){
   const chavePix = "Bernardmachado14@gmail.com";
   navigator.clipboard.writeText(chavePix);
   alert("Chave Pix copiada automaticamente!\n\n" + chavePix);
-  // Salvar no Firebase no caminho correto
-  push(ref(database, "torneio/" + torneio + "/inscritos"), {
-    uid: auth.currentUser.uid,
-    email: auth.currentUser.email,
-    nome: document.getElementById("nome").value,
-    telefone: document.getElementById("telefone").value,
-    data: new Date().toLocaleString(),
-    status: true
-  });
+  const user = auth.currentUser;
+  if(user){
+    push(ref(database, `torneio/${torneio}/inscritos`), {
+      uid: user.uid,
+      email: user.email,
+      nome: user.displayName || "",
+      telefone: "",
+      data: new Date().toLocaleString(),
+      status: true
+    });
+  }
 }
 
 window.pagarPessoal = function(torneio){
   alert("Sua mensagem foi enviada com sucesso.\nAguarde até 24 horas para confirmação.");
-  push(ref(database, "torneio/" + torneio + "/pendentes"), {
-    uid: auth.currentUser.uid,
-    email: auth.currentUser.email,
-    nome: document.getElementById("nome").value,
-    telefone: document.getElementById("telefone").value,
-    data: new Date().toLocaleString(),
-    status: true
-  });
+  const user = auth.currentUser;
+  if(user){
+    push(ref(database, `torneio/${torneio}/pendentes`), {
+      uid: user.uid,
+      email: user.email,
+      nome: user.displayName || "",
+      telefone: "",
+      data: new Date().toLocaleString(),
+      status: true
+    });
+  }
 }
 
 window.voltarInicio = function(){
