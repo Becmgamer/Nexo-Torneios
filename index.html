@@ -96,27 +96,95 @@ button{
 
 </div>
 
-<script>
-// Funções dos botões com mensagens
-function mostrarPix() {
-  alert("📌 Copie o e-mail para Pix: bernardemachado14@gmail.com\nFaça a transferência e espere a confirmação em até 24 horas.");
-  if(confirm("Deseja voltar para a aba inicial?")) {
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getDatabase, ref, set, get, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+// Config Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyDj5-aBr2n_wg80HswcaIOjetm7DtxILSI",
+  authDomain: "nexostudios-site-e9458.firebaseapp.com",
+  databaseURL: "https://nexostudios-site-e9458-default-rtdb.firebaseio.com",
+  projectId: "nexostudios-site-e9458",
+  storageBucket: "nexostudios-site-e9458.firebasestorage.app",
+  messagingSenderId: "247851109985",
+  appId: "1:247851109985:web:1b8903891240c55a376420"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+const limites = { "Brawl Stars":6, "Clash Royale":6 };
+const caminhos = { "Brawl Stars":"torneio/Brawl Stars/inscritos", "Clash Royale":"torneio/Clash Royale/inscritos" };
+
+// Atualiza contagem
+function atualizarContagem(game){
+  get(ref(db, caminhos[game])).then(snapshot=>{
+    const count = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
+    document.getElementById(game==='Brawl Stars'?'brawlCount':'clashCount').innerText = `Vagas ocupadas: ${count}`;
+  });
+}
+
+// Função comum para inscrição no Firebase
+function inscreverNoFirebase(game){
+  const user = auth.currentUser;
+  if(!user){
+    alert("Faça login primeiro.");
+    return;
+  }
+  const path = ref(db, caminhos[game]);
+  get(path).then(snapshot=>{
+    const inscritos = snapshot.exists() ? snapshot.val() : {};
+    const ativos = Object.values(inscritos).filter(i=>i.status).length;
+    if(ativos >= limites[game]){
+      alert("Torneio já está lotado, tente o próximo torneio.");
+      return;
+    }
+    const key = push(path).key;
+    set(ref(db, caminhos[game]+"/"+key), {
+      nome: user.displayName || "Sem nome",
+      email: user.email,
+      telefone: user.phoneNumber || "Sem telefone",
+      status: true,
+      data: new Date().toISOString()
+    }).then(()=> atualizarContagem(game));
+  });
+}
+
+// Botão Pix
+function pagarViaPix(game){
+  inscreverNoFirebase(game);
+  navigator.clipboard.writeText("bernardmachado14@gmail.com");
+  alert("📌 E-mail do Pix copiado: bernardmachado14@gmail.com\nFaça a transferência e espere a confirmação em até 24 horas.");
+  if(confirm("Deseja voltar para a aba inicial?")){
     window.location.href = "https://site.google.com/viu/grixstudios/inicio";
   }
 }
 
-function mostrarPresencial() {
+// Botão presencial
+function pagarPessoal(game){
+  inscreverNoFirebase(game);
   alert("Sua mensagem foi enviada com sucesso. Espere até 24 horas para confirmação.");
-  if(confirm("Deseja voltar para a aba inicial?")) {
-    window.location.href = "https://site.google.com/viu/grixstudios/inicio";
+  if(confirm("Deseja voltar para a aba inicial?")){
+    window.location.href = "https://site.google.com/view/grixstudios/inicio";
   }
 }
 
-// Adicionando eventos aos botões
-document.getElementById("brawlPix").addEventListener("click", mostrarPix);
-document.getElementById("brawlPresencial").addEventListener("click", mostrarPresencial);
-document.getElementById("clashPix").addEventListener("click", mostrarPix);
-document.getElementById("clashPresencial").addEventListener("click", mostrarPresencial);
+// Adiciona eventos aos botões
+document.getElementById("brawlPix").addEventListener("click", ()=>pagarViaPix("Brawl Stars"));
+document.getElementById("brawlPresencial").addEventListener("click", ()=>pagarPessoal("Brawl Stars"));
+document.getElementById("clashPix").addEventListener("click", ()=>pagarViaPix("Clash Royale"));
+document.getElementById("clashPresencial").addEventListener("click", ()=>pagarPessoal("Clash Royale"));
+
+// Atualiza contagem ao logar
+onAuthStateChanged(auth, user=>{
+  if(user){
+    atualizarContagem("Brawl Stars");
+    atualizarContagem("Clash Royale");
+  }
+});
 </script>
 
 </body>
