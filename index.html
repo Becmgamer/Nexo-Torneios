@@ -13,10 +13,7 @@ body{
   color:white;
   text-align:center;
 }
-
-.container{
-  margin-top:40px;
-}
+.container{ margin-top:40px; }
 
 input{
   display:block;
@@ -25,7 +22,6 @@ input{
   width:250px;
   border-radius:5px;
   border:none;
-  outline:none;
   background:#1c1c1c;
   color:white;
   border:1px solid #00ff88;
@@ -38,33 +34,12 @@ button{
   border-radius:5px;
   cursor:pointer;
   font-weight:bold;
-  transition:0.3s;
 }
 
-.primary{
-  background:#00ff88;
-  color:black;
-}
+.primary{ background:#00ff88; color:black; }
+.secondary{ background:#00ccff; color:black; }
 
-.primary:hover{
-  background:#00ccff;
-  color:white;
-  box-shadow:0 0 10px #00ccff;
-}
-
-.secondary{
-  background:#00ccff;
-  color:black;
-}
-
-.secondary:hover{
-  background:#00ff88;
-  box-shadow:0 0 10px #00ff88;
-}
-
-.hidden{
-  display:none;
-}
+.hidden{ display:none; }
 
 .cards{
   display:flex;
@@ -79,7 +54,6 @@ button{
   width:320px;
   border-radius:10px;
   border:1px solid #00ff88;
-  box-shadow:0 0 15px rgba(0,255,136,0.3);
 }
 </style>
 </head>
@@ -87,7 +61,6 @@ button{
 <body>
 
 <div class="container" id="loginArea">
-
 <h2>Grix Studios Login</h2>
 
 <input type="text" id="nome" placeholder="Nome">
@@ -98,94 +71,143 @@ button{
 
 <button class="primary" onclick="criarConta()">Criar Conta</button>
 <button class="secondary" onclick="entrar()">Entrar</button>
-
 </div>
 
 <div class="container hidden" id="torneiosArea">
-
 <h2>Torneios Grix Studios</h2>
 
 <div class="cards">
 
 <!-- BRAWL STARS -->
 <div class="card">
-
 <img src="https://i.postimg.cc/vBDwTGw1/cropped.webp" width="150"><br><br>
 
 <h3>Brawl Stars Cup GS</h3>
 
 <p><b>Última chance de entrada!</b></p>
 
-<p><b>Primeiro dia – 1º de março às 16:00</b><br>
+<p><b>1º de março às 16:00</b><br>
 Fase de grupos e eliminatórias</p>
 
 <p><b>Final e 3º lugar:</b><br>
-Será definido conforme a disponibilidade dos finalistas.</p>
+Será definido conforme disponibilidade dos finalistas.</p>
 
-<p><b>Troféu físico personalizado</b><br>
-Para 1º, 2º e 3º lugar.</p>
-
-<br>
-
-<button class="primary" onclick="pagarPix()">Pagar via Pix</button>
+<button class="primary" onclick="inscrever('brawlStars')">Pagar via Pix</button>
 <button class="secondary" onclick="pagarPessoal()">Pagar pessoalmente</button>
-<br><br>
-<button class="secondary" onclick="voltarInicio()">Voltar para aba inicial</button>
-
 </div>
 
 <!-- CLASH ROYALE -->
 <div class="card">
-
 <img src="https://i.postimg.cc/9MTkJZy1/images.jpg" width="150"><br><br>
 
 <h3>Clash Royale Cup GS</h3>
 
-<p><b>Formato (7 de março)</b><br>
-Fase de grupos e eliminatórias</p>
+<p><b>Data: 7 de março às 16:00</b></p>
 
-<p><b>Final e 3º lugar:</b><br>
-No mesmo dia, conforme disponibilidade dos finalistas.</p>
+<p><b>Formato:</b><br>
+Fase de grupos e eliminatórias<br>
+Final e 3º lugar no mesmo dia</p>
 
-<p><b>Troféu físico personalizado</b><br>
-Para 1º, 2º e 3º lugar.</p>
+<p><b>Troféu físico personalizado</b></p>
+
+<button class="primary" onclick="inscrever('clashRoyale')">Pagar via Pix</button>
+<button class="secondary" onclick="pagarPessoal()">Pagar pessoalmente</button>
+</div>
+
+</div>
 
 <br>
-
-<button class="primary" onclick="pagarPix()">Pagar via Pix</button>
-<button class="secondary" onclick="pagarPessoal()">Pagar pessoalmente</button>
-<br><br>
 <button class="secondary" onclick="voltarInicio()">Voltar para aba inicial</button>
-
 </div>
 
-</div>
-</div>
+<script type="module">
 
-<script>
-function criarConta(){
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } 
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getDatabase, ref, set, push } 
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+apiKey: "AIzaSyDj5-aBr2n_wg80HswcaIOjetm7DtxILSI",
+authDomain: "nexostudios-site-e9458.firebaseapp.com",
+databaseURL: "https://nexostudios-site-e9458-default-rtdb.firebaseio.com",
+projectId: "nexostudios-site-e9458",
+storageBucket: "nexostudios-site-e9458.firebasestorage.app",
+messagingSenderId: "247851109985",
+appId: "1:247851109985:web:1b8903891240c55a376420"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+let usuarioAtual = null;
+
+window.criarConta = function(){
+const nome = nome.value;
+const username = username.value;
+const email = email.value;
+const senha = senha.value;
+const telefone = telefone.value;
+
+createUserWithEmailAndPassword(auth,email,senha)
+.then(user=>{
+usuarioAtual = {
+uid:user.user.uid,
+nome,
+username,
+email,
+telefone
+};
 alert("Conta criada!");
+})
+.catch(e=>alert(e.message));
 }
 
-function entrar(){
-document.getElementById("loginArea").classList.add("hidden");
-document.getElementById("torneiosArea").classList.remove("hidden");
+window.entrar = function(){
+signInWithEmailAndPassword(auth,email.value,senha.value)
+.catch(e=>alert(e.message));
 }
 
-function pagarPix(){
-const chavePix = "bernardmachado14@gmail.com";
-navigator.clipboard.writeText(chavePix);
-alert("Chave Pix copiada automaticamente!\n\n" + chavePix);
+onAuthStateChanged(auth,(user)=>{
+if(user){
+usuarioAtual = user;
+loginArea.classList.add("hidden");
+torneiosArea.classList.remove("hidden");
+}
+});
+
+window.inscrever = function(torneio){
+
+if(!auth.currentUser){
+alert("Faça login primeiro!");
+return;
 }
 
-function pagarPessoal(){
-alert("Sua mensagem foi enviada com sucesso!\nEspere até um prazo de 24 horas para a sua resposta.");
+const user = auth.currentUser;
+
+const dados = {
+uid:user.uid,
+email:user.email,
+data:new Date().toLocaleString()
+};
+
+push(ref(db,"torneios/"+torneio+"/inscritos"),dados);
+
+navigator.clipboard.writeText("bernardmachado14@gmail.com");
+
+alert("Chave Pix copiada!\nInscrição enviada para confirmação.");
 }
 
-function voltarInicio(){
-window.location.href = "https://sites.google.com/view/grixstudios/in%C3%ADcio";
+window.pagarPessoal = function(){
+alert("Sua mensagem foi enviada com sucesso!\nEspere até 24 horas para confirmação.");
 }
+
+window.voltarInicio = function(){
+window.location.href="https://sites.google.com/view/grixstudios/in%C3%ADcio";
+}
+
 </script>
-
 </body>
 </html>
