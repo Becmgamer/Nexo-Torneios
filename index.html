@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Clickx Studios Torneios</title>
+<title>Grix Studios Torneios</title>
 
 <style>
 body{
@@ -77,12 +77,12 @@ button{
 </head>
 <body>
 
-<h1>Clickx Studios Torneios</h1>
+<h1>Grix Studios Torneios</h1>
 
 <div class="container" id="torneiosArea">
 
 <!-- Brawl Stars Cup GS -->
-<div class="card" style="margin-right:10px;">
+<div class="card">
 <img src="https://i.postimg.cc/vBDwTGw1/cropped.webp" width="150"><br><br>
 <h3>Brawl Stars Cup GS</h3>
 <p><b>Última chance de entrada:</b> Amanhã, 16:00</p>
@@ -98,8 +98,7 @@ button{
 
 <!-- Clash Royale Cup GS -->
 <div class="card">
-<img src="https://i.postimg.cc/9MTkJZy1/images.jpg
-" width="150"><br><br>
+<img src="https://i.postimg.cc/9MTkJZy1/images.jpg" width="150"><br><br>
 <h3>Clash Royale Cup GS</h3>
 <p><b>Última chance de entrada:</b> Domingo, 16:00</p>
 <p><b>Data:</b> 7 de março às 16:00</p>
@@ -136,41 +135,35 @@ const database = getDatabase(app);
 
 onAuthStateChanged(auth, (user)=>{
   if(user){
-    // Não precisa de login visível, pega automaticamente
     document.getElementById("torneiosArea").classList.remove("hidden");
   }
 });
 
-window.pagarPix = function(torneio){
-  const chavePix = "Bernardmachado14@gmail.com";
-  navigator.clipboard.writeText(chavePix);
-  alert("Chave Pix copiada automaticamente!\n\n" + chavePix);
+function salvarFirebaseManual(torneio, tipo){
   const user = auth.currentUser;
   if(user){
-    push(ref(database, `torneio/${torneio}/inscritos`), {
+    // Salvar na aba manual que você criou, evitando abas automáticas
+    push(ref(database, `torneio/${torneio}/${tipo}`), {
       uid: user.uid,
       email: user.email,
       nome: user.displayName || "",
-      telefone: "",
+      telefone: "", // Se quiser, pode adicionar input do telefone do usuário
       data: new Date().toLocaleString(),
       status: true
     });
   }
 }
 
+window.pagarPix = function(torneio){
+  const chavePix = "Bernardmachado14@gmail.com";
+  navigator.clipboard.writeText(chavePix);
+  alert("Chave Pix copiada automaticamente! Aguarde a confirmação.");
+  salvarFirebaseManual(torneio, 'inscritos');
+}
+
 window.pagarPessoal = function(torneio){
   alert("Sua mensagem foi enviada com sucesso.\nAguarde até 24 horas para confirmação.");
-  const user = auth.currentUser;
-  if(user){
-    push(ref(database, `torneio/${torneio}/pendentes`), {
-      uid: user.uid,
-      email: user.email,
-      nome: user.displayName || "",
-      telefone: "",
-      data: new Date().toLocaleString(),
-      status: true
-    });
-  }
+  salvarFirebaseManual(torneio, 'pendentes');
 }
 
 window.voltarInicio = function(){
