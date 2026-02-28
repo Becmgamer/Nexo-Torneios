@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Grix Studios Torneios</title>
-
 <style>
 body{
   margin:0;
@@ -13,19 +12,15 @@ body{
   color:white;
   text-align:center;
 }
-
 h1{
   margin-top:20px;
-  text-align:center;
 }
-
 .container{
-  margin-top:40px;
   display:flex;
-  flex-wrap:wrap;
   justify-content:center;
+  flex-wrap:wrap;
+  margin-top:40px;
 }
-
 .card{
   background:#1a1a1a;
   padding:20px;
@@ -35,7 +30,6 @@ h1{
   border:1px solid #00ff88;
   box-shadow:0 0 15px rgba(0,255,136,0.3);
 }
-
 button{
   padding:10px 20px;
   margin:5px;
@@ -45,33 +39,26 @@ button{
   font-weight:bold;
   transition:0.3s;
 }
-
 .primary{
   background:#00ff88;
   color:black;
 }
-
 .primary:hover{
   background:#00ccff;
   color:white;
   box-shadow:0 0 10px #00ccff;
 }
-
 .secondary{
   background:#00ccff;
   color:black;
 }
-
 .secondary:hover{
   background:#00ff88;
   box-shadow:0 0 10px #00ff88;
 }
-
-@media (max-width:768px){
-  .container{
-    flex-direction:column;
-    align-items:center;
-  }
+.count{
+  font-size:14px;
+  margin-bottom:10px;
 }
 </style>
 </head>
@@ -81,94 +68,101 @@ button{
 
 <div class="container" id="torneiosArea">
 
-<!-- Brawl Stars Cup GS -->
-<div class="card">
-<img src="https://i.postimg.cc/vBDwTGw1/cropped.webp" width="150"><br><br>
-<h3>Brawl Stars Cup GS</h3>
-<p><b>Última chance de entrada:</b> Amanhã, 16:00</p>
-<p><b>Data:</b> 1º de março às 16:00</p>
-<p><b>Fase:</b> Grupos e eliminatórias</p>
-<p><b>Final e 3º Lugar:</b> Será definido de acordo com a possibilidade dos finalistas</p>
-<p><b>Taxa de entrada:</b> R$0,50 | <b>Prêmios:</b> 1º - R$10, 2º - R$3, 3º - R$1</p>
-<button class="primary" onclick="pagarPix('brawl-stars')">Pagar via Pix</button>
-<button class="secondary" onclick="pagarPessoal('brawl-stars')">Pagar pessoalmente</button>
-<br><br>
-<button class="secondary" onclick="voltarInicio()">Voltar para aba inicial</button>
-</div>
+  <!-- Brawl Stars -->
+  <div class="card" id="brawlCard">
+    <img src="https://i.postimg.cc/vBDwTGw1/cropped.webp" width="150"><br><br>
+    <h3>Brawl Stars Cup GS</h3>
+    <p class="count" id="brawlCount">Vagas ocupadas: 0</p>
+    <p><b>Data de entrada:</b><br>1º de março às 16:00</p>
+    <p><b>Final e 3º Lugar:</b><br>Será definido de acordo com a possibilidade dos finalistas</p>
+    <p><b>Taxa de entrada:</b> R$0,50</p>
+    <p><b>Prêmios:</b> 1º R$10, 2º R$3, 3º R$1</p>
+    <button class="primary" onclick="inscrever('Brawl Stars')">Pagar via Pix</button>
+    <button class="secondary" onclick="pagarPessoal('Brawl Stars')">Pagar pessoalmente</button>
+  </div>
 
-<!-- Clash Royale Cup GS -->
-<div class="card">
-<img src="https://i.postimg.cc/9MTkJZy1/images.jpg" width="150"><br><br>
-<h3>Clash Royale Cup GS</h3>
-<p><b>Última chance de entrada:</b> Domingo, 16:00</p>
-<p><b>Data:</b> 7 de março às 16:00</p>
-<p><b>Formato:</b> Fase de grupos eliminatórias, final e terceiro lugar no mesmo dia</p>
-<p><b>Taxa de entrada:</b> R$1,00 | <b>Prêmios:</b> 1º - R$5, 2º - R$3, 3º - R$1</p>
-<p><b>Inclui:</b> Troféu físico personalizado para 1º, 2º e 3º lugar</p>
-<button class="primary" onclick="pagarPix('clash-royale')">Pagar via Pix</button>
-<button class="secondary" onclick="pagarPessoal('clash-royale')">Pagar pessoalmente</button>
-<br><br>
-<button class="secondary" onclick="voltarInicio()">Voltar para aba inicial</button>
-</div>
+  <!-- Clash Royale -->
+  <div class="card" id="clashCard">
+    <img src="https://i.postimg.cc/9MTkJZy1/images.jpg" width="150"><br><br> <!-- Troque pelo link da imagem do Clash Royale -->
+    <h3>Clash Royale Cup GS</h3>
+    <p class="count" id="clashCount">Vagas ocupadas: 0</p>
+    <p><b>Data de entrada:</b><br>7 de março às 16:00</p>
+    <p><b>Formato:</b><br>Fase de grupos e eliminatórias, final e 3º lugar no mesmo dia</p>
+    <p><b>Taxa de entrada:</b> R$1,00</p>
+    <p><b>Prêmios:</b> 1º R$5, 2º R$3, 3º R$1 + troféu físico personalizado</p>
+    <button class="primary" onclick="inscrever('Clash Royale')">Pagar via Pix</button>
+    <button class="secondary" onclick="pagarPessoal('Clash Royale')">Pagar pessoalmente</button>
+  </div>
 
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, set, get, child, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-// Firebase Config
+// Config Firebase
 const firebaseConfig = {
-apiKey: "AIzaSyDj5-aBr2n_wg80HswcaIOjetm7DtxILSI",
-authDomain: "nexostudios-site-e9458.firebaseapp.com",
-databaseURL: "https://nexostudios-site-e9458-default-rtdb.firebaseio.com",
-projectId: "nexostudios-site-e9458",
-storageBucket: "nexostudios-site-e9458.firebasestorage.app",
-messagingSenderId: "247851109985",
-appId: "1:247851109985:web:1b8903891240c55a376420"
+  apiKey: "AIzaSyDj5-aBr2n_wg80HswcaIOjetm7DtxILSI",
+  authDomain: "nexostudios-site-e9458.firebaseapp.com",
+  databaseURL: "https://nexostudios-site-e9458-default-rtdb.firebaseio.com",
+  projectId: "nexostudios-site-e9458",
+  storageBucket: "nexostudios-site-e9458.firebasestorage.app",
+  messagingSenderId: "247851109985",
+  appId: "1:247851109985:web:1b8903891240c55a376420"
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const database = getDatabase(app);
+const db = getDatabase(app);
 
-onAuthStateChanged(auth, (user)=>{
+const limites = { "Brawl Stars":6, "Clash Royale":6 };
+const caminhos = { "Brawl Stars":"torneio/Brawl Stars/inscritos", "Clash Royale":"torneio/Clash Royale/inscritos" };
+
+function atualizarContagem(game){
+  get(ref(db, caminhos[game])).then(snapshot=>{
+    const count = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
+    document.getElementById(game==='Brawl Stars'?'brawlCount':'clashCount').innerText = `Vagas ocupadas: ${count}`;
+  });
+}
+
+function inscrever(game){
+  const user = auth.currentUser;
+  if(!user){ alert("Faça login primeiro."); return; }
+
+  const path = ref(db, caminhos[game]);
+  get(path).then(snapshot=>{
+    const inscritos = snapshot.exists() ? snapshot.val() : {};
+    const ativos = Object.values(inscritos).filter(i=>i.status).length;
+    if(ativos >= limites[game]){
+      alert("Torneio já está lotado, tente o próximo torneio.");
+      return;
+    }
+    const novoInscrito = {
+      nome: user.displayName || "Sem nome",
+      email: user.email,
+      telefone: user.phoneNumber || "Sem telefone",
+      status:true,
+      data: new Date().toISOString()
+    };
+    const key = push(path).key;
+    set(ref(db, caminhos[game] + "/" + key), novoInscrito).then(()=>atualizarContagem(game));
+    navigator.clipboard.writeText("Bernardmachado14@gmail.com");
+    alert("Chave Pix copiada automaticamente!");
+  });
+}
+
+function pagarPessoal(game){
+  alert("Sua mensagem foi enviada com sucesso. Espere até 24 horas para confirmação.");
+}
+
+onAuthStateChanged(auth,user=>{
   if(user){
-    document.getElementById("torneiosArea").classList.remove("hidden");
+    atualizarContagem("Brawl Stars");
+    atualizarContagem("Clash Royale");
   }
 });
 
-function salvarFirebaseManual(torneio, tipo){
-  const user = auth.currentUser;
-  if(user){
-    // Salvar na aba manual que você criou, evitando abas automáticas
-    push(ref(database, `torneio/${torneio}/${tipo}`), {
-      uid: user.uid,
-      email: user.email,
-      nome: user.displayName || "",
-      telefone: "", // Se quiser, pode adicionar input do telefone do usuário
-      data: new Date().toLocaleString(),
-      status: true
-    });
-  }
-}
-
-window.pagarPix = function(torneio){
-  const chavePix = "Bernardmachado14@gmail.com";
-  navigator.clipboard.writeText(chavePix);
-  alert("Chave Pix copiada automaticamente! Aguarde a confirmação.");
-  salvarFirebaseManual(torneio, 'inscritos');
-}
-
-window.pagarPessoal = function(torneio){
-  alert("Sua mensagem foi enviada com sucesso.\nAguarde até 24 horas para confirmação.");
-  salvarFirebaseManual(torneio, 'pendentes');
-}
-
-window.voltarInicio = function(){
-  window.location.href = "https://sites.google.com/view/grixstudios/in%C3%ADcio";
-}
 </script>
 </body>
 </html>
