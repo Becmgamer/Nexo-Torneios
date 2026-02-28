@@ -14,10 +14,6 @@ body{
   text-align:center;
 }
 
-h2{
-  margin-top:40px;
-}
-
 .container{
   padding:20px;
 }
@@ -73,17 +69,49 @@ button:hover{
 }
 </style>
 
-<script>
-function pagarPix(){
-  alert("Pagamento via Pix selecionado.");
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDj5-aBr2n_wg80HswcaIOjetm7DtxILSI",
+  authDomain: "nexostudios-site-e9458.firebaseapp.com",
+  databaseURL: "https://nexostudios-site-e9458-default-rtdb.firebaseio.com",
+  projectId: "nexostudios-site-e9458",
+  storageBucket: "nexostudios-site-e9458.firebasestorage.app",
+  messagingSenderId: "247851109985",
+  appId: "1:247851109985:web:1b8903891240c55a376420"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const chavePix = "bernardmachado14@gmail.com";
+
+window.pagarPix = function(torneio){
+  navigator.clipboard.writeText(chavePix).then(()=>{
+    salvarInscricao(torneio);
+    alert("Chave Pix copiada e inscrição registrada com sucesso!");
+  });
 }
 
-function pagarPessoal(){
-  alert("Pagamento pessoalmente selecionado.");
+window.pagarPessoal = function(torneio){
+  salvarInscricao(torneio);
+  alert("Sua mensagem foi enviada com sucesso.\nEspere até 24 horas para confirmação.");
 }
 
-function voltarInicio(){
-  window.scrollTo({top:0, behavior:"smooth"});
+function salvarInscricao(torneio){
+  const usuarioId = "user_" + Date.now();
+
+  set(ref(db, "torneios/" + torneio + "/" + usuarioId), {
+    data: new Date().toISOString(),
+    status: "aguardando confirmação"
+  });
+}
+
+window.voltarInicio = function(){
+  window.location.href = "https://sites.google.com/view/grixstudios/início";
 }
 </script>
 
@@ -103,7 +131,7 @@ function voltarInicio(){
 
 <h3>Brawl Stars Cup GS</h3>
 
-<p><b>⚠ Torneio amanhã – Último dia para entrar!</b></p>
+<p><b>⚠ Última chance de entrada!</b></p>
 
 <p>
 <b>Data:</b><br>
@@ -113,11 +141,11 @@ Fase de grupos e eliminatórias
 
 <p>
 <b>Final e 3º Lugar:</b><br>
-Serão definidos de acordo com a possibilidade de participação dos quatro finalistas (4 finalistas).
+Definidos conforme disponibilidade dos finalistas.
 </p>
 
-<button class="primary" onclick="pagarPix()">Pagar via Pix</button>
-<button class="secondary" onclick="pagarPessoal()">Pagar pessoalmente</button>
+<button class="primary" onclick="pagarPix('brawlStars')">Pagar via Pix</button>
+<button class="secondary" onclick="pagarPessoal('brawlStars')">Pagar pessoalmente</button>
 <br>
 <button class="secondary" onclick="voltarInicio()">Voltar para aba inicial</button>
 
@@ -141,13 +169,8 @@ Fase de grupos, eliminatórias, final e terceiro lugar.<br>
 Tudo no mesmo dia.
 </p>
 
-<p>
-<b>Mecânica:</b><br>
-Mesmo estilo do Brawl Stars Cup GS.
-</p>
-
-<button class="primary" onclick="pagarPix()">Pagar via Pix</button>
-<button class="secondary" onclick="pagarPessoal()">Pagar pessoalmente</button>
+<button class="primary" onclick="pagarPix('clashRoyale')">Pagar via Pix</button>
+<button class="secondary" onclick="pagarPessoal('clashRoyale')">Pagar pessoalmente</button>
 <br>
 <button class="secondary" onclick="voltarInicio()">Voltar para aba inicial</button>
 
