@@ -74,6 +74,9 @@ button{
   border-radius:10px;
   border:1px solid #00ff88;
   box-shadow:0 0 15px rgba(0,255,136,0.3);
+  display:inline-block;
+  vertical-align:top;
+  margin-right:20px;
 }
 </style>
 </head>
@@ -116,7 +119,7 @@ button{
 
 <!-- Clash Royale Cup GS -->
 <div class="card">
-<img src="https://i.postimg.cc/vBDwTGw1/cropped.webp" width="150"><br><br>
+<img src="https://i.postimg.cc/9MTkJZy1/images.jpg" width="150"><br><br>
 <h3>Clash Royale Cup GS</h3>
 <p><b>Taxa de entrada:</b> R$1,00</p>
 <p><b>Prêmios:</b> 1º lugar R$5, 2º lugar R$3, 3º lugar R$1</p>
@@ -194,13 +197,11 @@ onAuthStateChanged(auth, (user)=>{
   }
 });
 
-// Função para salvar inscrição no Firebase corretamente
 window.pagarPix = function(torneio){
   const chavePix = "Bernardmachado14@gmail.com";
   navigator.clipboard.writeText(chavePix);
   alert("Chave Pix copiada automaticamente!\n\n" + chavePix);
 
-  // Salva inscrição no Firebase no nó correto
   const user = auth.currentUser;
   if(user){
     const nome = document.getElementById("nome").value;
@@ -222,7 +223,6 @@ window.pagarPix = function(torneio){
 window.pagarPessoal = function(torneio){
   alert("Sua mensagem foi enviada com sucesso.\nEspere até 24 horas para confirmação.");
 
-  // Salva inscrição presencial no Firebase no nó correto
   const user = auth.currentUser;
   if(user){
     const nome = document.getElementById("nome").value;
