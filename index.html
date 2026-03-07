@@ -111,6 +111,7 @@ box-shadow:0 0 15px rgba(0,255,136,0.3);
 <p>Taxa de entrada: R$0,50</p>
 
 <p>🏆 Prêmios</p>
+
 <p>
 1º Lugar R$5,00<br>
 2º Lugar R$3,00<br>
@@ -138,10 +139,27 @@ Máximo: 32
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+import {
+getAuth,
+createUserWithEmailAndPassword,
+signInWithEmailAndPassword,
+onAuthStateChanged,
+setPersistence,
+browserLocalPersistence,
+signOut
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+import {
+getDatabase,
+ref,
+set,
+get,
+child
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig = {
+
 apiKey: "SUA_API",
 authDomain: "SEU_AUTH",
 databaseURL: "SEU_DATABASE",
@@ -149,14 +167,16 @@ projectId: "SEU_PROJECT",
 storageBucket: "SEU_BUCKET",
 messagingSenderId: "SEU_ID",
 appId: "SEU_APP"
+
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const database = getDatabase(app);
 
+setPersistence(auth, browserLocalPersistence);
+
 const maxJogadores = 32;
-const minJogadores = 8;
 
 function atualizarContador(){
 
@@ -165,9 +185,10 @@ get(child(ref(database),"inscricoes")).then((snapshot)=>{
 let total = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
 
 document.getElementById("contador").innerText =
-"Jogadores inscritos: " + total + " / " + maxJogadores;
+"Jogadores inscritos: "+total+" / "+maxJogadores;
 
 });
+
 }
 
 window.criarConta = function(){
@@ -179,26 +200,31 @@ const senha = document.getElementById("senha").value;
 const telefone = document.getElementById("telefone").value;
 
 createUserWithEmailAndPassword(auth,email,senha)
+
 .then((userCredential)=>{
 
 const user = userCredential.user;
 
 set(ref(database,"usuarios/"+user.uid),{
+
 nome:nome,
 username:username,
 email:email,
 telefone:telefone,
 aprovado:false
+
 });
 
 alert("Conta criada!");
 
 })
+
 .catch(error=>{
 
 alert(error.message);
 
 });
+
 }
 
 window.entrar = function(){
@@ -207,11 +233,33 @@ const email = document.getElementById("email").value;
 const senha = document.getElementById("senha").value;
 
 signInWithEmailAndPassword(auth,email,senha)
+
+.then(()=>{
+
+localStorage.setItem("loginTime",Date.now());
+
+})
+
 .catch(error=>{
 
 alert(error.message);
 
 });
+
+}
+
+const tempoSalvo = localStorage.getItem("loginTime");
+
+if(tempoSalvo){
+
+const umaSemana = 7*24*60*60*1000;
+
+if(Date.now() - tempoSalvo > umaSemana){
+
+signOut(auth);
+localStorage.removeItem("loginTime");
+
+}
 
 }
 
